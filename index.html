@@ -1,85 +1,252 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="bg-[#0b0b0c] text-[#e2e8f0] antialiased">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiamMore | Digital Garden</title>
+    <title>Siam More 風格極簡點餐系統</title>
+    <!-- 引入 Tailwind CSS 進行快速、簡約的樣式排版 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 參考饗泰多風格的品牌色調
+                        siamPurple: '#4A2A74', // 品牌主色：洗鍊的深紫
+                        siamGold: '#C9A054',   // 點綴色：質感的暖金
+                        siamBg: '#F9F8F6'      // 背景色：簡約的米白
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 引入 FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        /* 隱藏滾動條但保持功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body 
-    class="max-w-2xl mx-auto px-6 py-16 md:py-24 tracking-tight"
-    x-data="{ 
-        lang: 'zh', 
-        currentTab: 'all',
-        // 這裡放你所有的專案/文章數據（底層資料庫邏輯）
-        items: [
-            { id: 1, type: 'work', year: '2026', zh: { title: '饗泰多營運優化', desc: '針對連鎖餐飲進行數位轉型與流程重塑。' }, en: { title: 'SiamMore Operation', desc: 'Digital transformation and workflow restructuring.' } },
-            { id: 2, type: 'oss', year: '★ 1.2k', zh: { title: '極簡 UI 框架', desc: '基於 Tailwind 的輕量級開源組件庫。' }, en: { title: 'Minimal UI Kit', desc: 'Lightweight open-source components based on Tailwind.' } },
-            { id: 3, type: 'posts', year: 'May 12', zh: { title: '淺談極簡網頁設計', desc: '為什麼克制的設計反而能留住使用者的目光？' }, en: { title: 'On Minimalism Design', desc: 'Why restrained design captures more user attention.' } },
-            { id: 4, type: 'oss', year: '★ 420', zh: { title: '自動化部署腳本', desc: '一鍵將本地專案打包並推送到 Vercel 雲端。' }, en: { title: 'Auto Deploy Script', desc: 'One-click packaging and deployment to Vercel.' } }
-        ]
-    }"
->
+<body class="bg-siamBg text-gray-800 min-h-screen flex flex-col">
 
-    <nav class="flex justify-between items-center mb-16">
-        <div class="text-sm font-mono text-zinc-500 hover:text-zinc-300 cursor-pointer">siammore.dev</div>
-        <button 
-            @click="lang = (lang === 'zh' ? 'en' : 'zh')" 
-            class="text-xs font-mono bg-zinc-900 border border-zinc-800 hover:border-zinc-600 px-3 py-1.5 rounded-md text-zinc-400 hover:text-white transition-all"
-            x-text="lang === 'zh' ? 'EN' : '中'"
-        >
-        </button>
-    </nav>
-
-    <header class="mb-14">
-        <h1 class="text-2xl font-bold text-white mb-2" x-text="lang === 'zh' ? '您的名字' : 'Your Name'"></h1>
-        <p class="text-zinc-400 text-sm mb-4" x-text="lang === 'zh' ? '網頁設計師 / 數位創作者' : 'Web Designer / Digital Creator'"></p>
-        <p class="text-zinc-500 leading-relaxed text-sm max-w-lg" x-text="lang === 'zh' ? '「Life is Art」— 專注於品牌管理與極簡美學。用克制的設計與代碼，打造極致流暢的網頁體驗。' : '“Life is Art” — Focusing on brand management and minimalist aesthetics. Crafting seamless web experiences with restrained design.'">
-        </p>
+    <!-- 頂部導覽列 Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl font-bold tracking-wider text-siamPurple flex items-center">
+                    <i class="fa-solid fa-utensils mr-2 text-siamGold"></i>SIAM MORE
+                </span>
+                <span class="text-xs bg-siamPurple text-white px-2 py-0.5 rounded font-light tracking-widest">點餐系統</span>
+            </div>
+            <div class="text-sm text-gray-500 font-medium">桌號：A06</div>
+        </div>
     </header>
 
-    <section class="mb-8">
-        <div class="flex space-x-2 border-b border-zinc-900 pb-3 text-xs font-mono">
-            <button @click="currentTab = 'all'" :class="currentTab === 'all' ? 'text-white font-bold' : 'text-zinc-500 hover:text-zinc-300'" class="transition-colors">All</button>
-            <span class="text-zinc-800">/</span>
-            <button @click="currentTab = 'work'" :class="currentTab === 'work' ? 'text-white font-bold' : 'text-zinc-500 hover:text-zinc-300'" class="transition-colors">Work</button>
-            <span class="text-zinc-800">/</span>
-            <button @click="currentTab = 'oss'" :class="currentTab === 'oss' ? 'text-white font-bold' : 'text-zinc-500 hover:text-zinc-300'" class="transition-colors">OSS</button>
-            <span class="text-zinc-800">/</span>
-            <button @click="currentTab = 'posts'" :class="currentTab === 'posts' ? 'text-white font-bold' : 'text-zinc-500 hover:text-zinc-300'" class="transition-colors">Posts</button>
-        </div>
-    </section>
+    <!-- 主要內容區塊 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
+        
+        <!-- 左側：菜單分類與商品列表 (佔據主要寬度) -->
+        <div class="flex-1 flex flex-col">
+            
+            <!-- 分類橫條 (Sticky 釘在頂部) -->
+            <div class="sticky top-16 bg-siamBg py-2 z-30 overflow-x-auto no-scrollbar flex space-x-2 border-b border-gray-200/60 mb-6">
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-siamPurple text-white shadow-sm transition">熱門推薦</button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">經典肉類</button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">鮮腴海鮮</button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">泰風蔬食</button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">泰風飲品</button>
+            </div>
 
-    <main class="mb-20 min-height-[300px]">
-        <div class="space-y-2">
-            <template x-for="item in items" :key="item.id">
-                <div 
-                    x-show="currentTab === 'all' || currentTab === item.type"
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 transform translate-y-1"
-                    x-transition:enter-end="opacity-100 transform translate-y-0"
-                    class="p-4 rounded-lg border border-zinc-900 bg-zinc-900/10 hover:bg-zinc-900/40 hover:border-zinc-800 transition-all duration-200"
-                >
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-zinc-200 font-medium text-sm" x-text="lang === 'zh' ? item.zh.title : item.en.title"></h3>
-                            <p class="text-zinc-500 text-xs mt-1" x-text="lang === 'zh' ? item.zh.desc : item.en.desc"></p>
+            <!-- 商品 Grid 列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                
+                <!-- 商品卡片 1 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group hover:shadow-md transition duration-300">
+                    <div>
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <!-- 預留圖片位置，使用 Unsplash 質感美食照示意 -->
+                            <img src="https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=600&q=80" alt="冠軍月亮蝦餅" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-md font-medium">Top 1</span>
                         </div>
-                        <span class="text-[10px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800" x-text="item.year"></span>
+                        <div class="p-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">冠軍月亮蝦餅</h3>
+                            <p class="text-gray-400 text-xs line-clamp-2 font-light">全台最厚 2 公分！內餡滿滿現打草蝦仁，每一口都酥脆彈牙。</p>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0 flex items-center justify-between">
+                        <span class="text-xl font-bold text-siamPurple"><span class="text-sm font-medium mr-0.5">NT$</span>420</span>
+                        <button onclick="addToCart('冠軍月亮蝦餅', 420)" class="bg-siamPurple hover:bg-siamPurple/90 text-white text-sm px-4 py-2 rounded-xl font-medium shadow-sm transition flex items-center space-x-1">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>加入購物車</span>
+                        </button>
                     </div>
                 </div>
-            </template>
+
+                <!-- 商品卡片 2 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group hover:shadow-md transition duration-300">
+                    <div>
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80" alt="黃金咖哩雞" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">黃金咖哩雞</h3>
+                            <p class="text-gray-400 text-xs line-clamp-2 font-light">精心熬煮泰式黃咖哩，搭配鮮嫩去骨雞腿肉與綿密馬鈴薯。</p>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0 flex items-center justify-between">
+                        <span class="text-xl font-bold text-siamPurple"><span class="text-sm font-medium mr-0.5">NT$</span>380</span>
+                        <button onclick="addToCart('黃金咖哩雞', 380)" class="bg-siamPurple hover:bg-siamPurple/90 text-white text-sm px-4 py-2 rounded-xl font-medium shadow-sm transition flex items-center space-x-1">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>加入購物車</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 商品卡片 3 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group hover:shadow-md transition duration-300">
+                    <div>
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80" alt="蝦醬空心菜" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">蝦醬空心菜</h3>
+                            <p class="text-gray-400 text-xs line-clamp-2 font-light">大火爆炒鮮脆空心菜，融入濃厚手工提煉蝦醬，鑊氣十足。</p>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0 flex items-center justify-between">
+                        <span class="text-xl font-bold text-siamPurple"><span class="text-sm font-medium mr-0.5">NT$</span>220</span>
+                        <button onclick="addToCart('蝦醬空心菜', 220)" class="bg-siamPurple hover:bg-siamPurple/90 text-white text-sm px-4 py-2 rounded-xl font-medium shadow-sm transition flex items-center space-x-1">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>加入購物車</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
         </div>
+
+        <!-- 右側：固定式購物車 Sidepanel (桌機固定，手機寬度自適應) -->
+        <div class="w-full lg:w-96 bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm sticky top-28 self-start flex flex-col max-h-[calc(100vh-8rem)]">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                <h2 class="text-lg font-bold text-gray-900 flex items-center">
+                    <i class="fa-solid fa-shopping-bag mr-2 text-siamGold"></i>明細隨時看
+                </h2>
+                <span id="cart-count" class="bg-siamBg text-siamPurple text-xs px-2 py-1 rounded-full font-bold">0 項商品</span>
+            </div>
+
+            <!-- 購物車品項滾動區 -->
+            <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 no-scrollbar min-h-[150px] max-h-[300px] pr-1">
+                <!-- 空購物車狀態 -->
+                <div id="empty-state" class="text-center py-8 text-gray-400 flex flex-col items-center justify-center space-y-2">
+                    <i class="fa-solid fa-receipt text-3xl text-gray-200"></i>
+                    <p class="text-sm font-light">尚未選擇任何美味菜色</p>
+                </div>
+            </div>
+
+            <!-- 計價與結帳區 -->
+            <div class="border-t border-gray-100 pt-4 mt-4 space-y-3">
+                <div class="flex justify-between text-sm text-gray-500">
+                    <span>小計 Subtotal</span>
+                    <span id="subtotal">NT$ 0</span>
+                </div>
+                <div class="flex justify-between text-sm text-gray-500">
+                    <span>服務費 Service Charge (10%)</span>
+                    <span id="service-charge">NT$ 0</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
+                    <span class="font-bold text-gray-900">總計 Total</span>
+                    <span id="total-amount" class="text-2xl font-black text-siamPurple">NT$ 0</span>
+                </div>
+                <button class="w-full mt-2 bg-siamPurple hover:bg-siamPurple/90 text-white font-bold py-3.5 rounded-xl transition duration-150 shadow-md shadow-siamPurple/10 tracking-widest text-sm">
+                    送出訂單
+                </button>
+            </div>
+        </div>
+
     </main>
 
-    <footer class="border-t border-zinc-900 pt-6 flex justify-between items-center text-[11px] text-zinc-600 font-mono">
-        <div class="flex space-x-4">
-            <a href="#" class="hover:text-zinc-400 transition-colors">GitHub</a>
-            <a href="#" class="hover:text-zinc-400 transition-colors">Twitter</a>
-        </div>
-        <div>© 2026 SiamMore.</div>
-    </footer>
+    <!-- 簡易購物車 Logic 控制指令碼 -->
+    <script>
+        let cart = [];
 
+        function addToCart(name, price) {
+            const existingItem = cart.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            updateCartUI();
+        }
+
+        function updateQuantity(name, amount) {
+            const item = cart.find(item => item.name === name);
+            if (item) {
+                item.quantity += amount;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.name !== name);
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const emptyState = document.getElementById('empty-state');
+            const cartCount = document.getElementById('cart-count');
+            const subtotalEl = document.getElementById('subtotal');
+            const serviceChargeEl = document.getElementById('service-charge');
+            const totalAmountEl = document.getElementById('total-amount');
+
+            // 清空容器，保留空狀態元素
+            cartItemsContainer.innerHTML = '';
+
+            if (cart.length === 0) {
+                cartItemsContainer.appendChild(emptyState);
+                cartCount.innerText = '0 項商品';
+                subtotalEl.innerText = 'NT$ 0';
+                serviceChargeEl.innerText = 'NT$ 0';
+                totalAmountEl.innerText = 'NT$ 0';
+                return;
+            }
+
+            let subtotal = 0;
+            let totalItems = 0;
+
+            cart.forEach(item => {
+                subtotal += item.price * item.quantity;
+                totalItems += item.quantity;
+
+                const itemRow = document.createElement('div');
+                itemRow.className = 'flex items-center justify-between border-b border-gray-50/60 pb-3';
+                itemRow.innerHTML = `
+                    <div class="flex-1 pr-2">
+                        <h4 class="text-sm font-bold text-gray-800">${item.name}</h4>
+                        <span class="text-xs text-siamPurple font-medium">NT$ ${item.price}</span>
+                    </div>
+                    <div class="flex items-center space-x-2.5 bg-gray-50 rounded-lg p-1 border border-gray-100">
+                        <button onclick="updateQuantity('${item.name}', -1)" class="w-6 h-6 rounded bg-white hover:bg-gray-100 flex items-center justify-center text-xs text-gray-500 shadow-sm transition">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="text-sm font-bold text-gray-800 w-4 text-center">${item.quantity}</span>
+                        <button onclick="updateQuantity('${item.name}', 1)" class="w-6 h-6 rounded bg-white hover:bg-gray-100 flex items-center justify-center text-xs text-gray-500 shadow-sm transition">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(itemRow);
+            });
+
+            const serviceCharge = Math.round(subtotal * 0.1);
+            const total = subtotal + serviceCharge;
+
+            cartCount.innerText = `${totalItems} 項商品`;
+            subtotalEl.innerText = `NT$ ${subtotal.toLocaleString()}`;
+            serviceChargeEl.innerText = `NT$ ${serviceCharge.toLocaleString()}`;
+            totalAmountEl.innerText = `NT$ ${total.toLocaleString()}`;
+        }
+    </script>
 </body>
 </html>
