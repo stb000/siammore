@@ -3,249 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Siam More 風格極簡點餐系統</title>
-    <!-- 引入 Tailwind CSS 進行快速、簡約的樣式排版 -->
+    <title>SIAM MORE 極簡步驟點餐系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        // 參考饗泰多風格的品牌色調
-                        siamPurple: '#4A2A74', // 品牌主色：洗鍊的深紫
-                        siamGold: '#C9A054',   // 點綴色：質感的暖金
-                        siamBg: '#F9F8F6'      // 背景色：簡約的米白
+                        siamPurple: '#4A2A74', // 品牌深紫
+                        siamGold: '#C9A054',   // 品牌暖金
+                        siamBg: '#F9F8F6'      // 簡約米白
                     }
                 }
             }
         }
     </script>
-    <!-- 引入 FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-        /* 隱藏滾動條但保持功能 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-siamBg text-gray-800 min-h-screen flex flex-col">
 
-    <!-- 頂部導覽列 Header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <span class="text-2xl font-bold tracking-wider text-siamPurple flex items-center">
-                    <i class="fa-solid fa-utensils mr-2 text-siamGold"></i>SIAM MORE
-                </span>
-                <span class="text-xs bg-siamPurple text-white px-2 py-0.5 rounded font-light tracking-widest">點餐系統</span>
-            </div>
-            <div class="text-sm text-gray-500 font-medium">桌號：A06</div>
+            <span class="text-2xl font-bold tracking-wider text-siamPurple flex items-center">
+                <i class="fa-solid fa-utensils mr-2 text-siamGold"></i>SIAM MORE
+            </span>
+            <span id="header-status" class="text-sm font-medium text-gray-500 hidden">
+                <span id="selected-store-tag" class="bg-gray-100 text-gray-700 px-2 py-1 rounded mr-2">未選分店</span>
+                <span id="selected-time-tag" class="text-gray-400">請先完成資料輸入</span>
+            </span>
         </div>
     </header>
 
-    <!-- 主要內容區塊 -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
         
-        <!-- 左側：菜單分類與商品列表 (佔據主要寬度) -->
-        <div class="flex-1 flex flex-col">
-            
-            <!-- 分類橫條 (Sticky 釘在頂部) -->
-            <div class="sticky top-16 bg-siamBg py-2 z-30 overflow-x-auto no-scrollbar flex space-x-2 border-b border-gray-200/60 mb-6">
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-siamPurple text-white shadow-sm transition">熱門推薦</button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">經典肉類</button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">鮮腴海鮮</button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">泰風蔬食</button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">泰風飲品</button>
-            </div>
+        <div class="max-w-xl mx-auto mb-10">
+            <div class="flex items-center justify-between relative">
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-gray-200 -z-10"></div>
+                <div id="step-progress-line" class="absolute left-0 top-1/2 -translate-y-1/2 w-0 h-0.5 bg-siamPurple -z-10 transition-all duration-300"></div>
 
-            <!-- 商品 Grid 列表 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                
-                <!-- 商品卡片 1 -->
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group hover:shadow-md transition duration-300">
-                    <div>
-                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
-                            <!-- 預留圖片位置，使用 Unsplash 質感美食照示意 -->
-                            <img src="https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=600&q=80" alt="冠軍月亮蝦餅" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <span class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-md font-medium">Top 1</span>
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-bold text-gray-900 mb-1">冠軍月亮蝦餅</h3>
-                            <p class="text-gray-400 text-xs line-clamp-2 font-light">全台最厚 2 公分！內餡滿滿現打草蝦仁，每一口都酥脆彈牙。</p>
-                        </div>
-                    </div>
-                    <div class="p-4 pt-0 flex items-center justify-between">
-                        <span class="text-xl font-bold text-siamPurple"><span class="text-sm font-medium mr-0.5">NT$</span>420</span>
-                        <button onclick="addToCart('冠軍月亮蝦餅', 420)" class="bg-siamPurple hover:bg-siamPurple/90 text-white text-sm px-4 py-2 rounded-xl font-medium shadow-sm transition flex items-center space-x-1">
-                            <i class="fa-solid fa-plus text-xs"></i>
-                            <span>加入購物車</span>
-                        </button>
-                    </div>
+                <div class="flex flex-col items-center bg-siamBg px-2">
+                    <div id="circle-1" class="w-8 h-8 rounded-full bg-siamPurple text-white flex items-center justify-center font-bold text-sm shadow-sm transition">1</div>
+                    <span id="text-1" class="text-xs font-bold text-siamPurple mt-2">選擇分店</span>
                 </div>
-
-                <!-- 商品卡片 2 -->
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group hover:shadow-md transition duration-300">
-                    <div>
-                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
-                            <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80" alt="黃金咖哩雞" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-bold text-gray-900 mb-1">黃金咖哩雞</h3>
-                            <p class="text-gray-400 text-xs line-clamp-2 font-light">精心熬煮泰式黃咖哩，搭配鮮嫩去骨雞腿肉與綿密馬鈴薯。</p>
-                        </div>
-                    </div>
-                    <div class="p-4 pt-0 flex items-center justify-between">
-                        <span class="text-xl font-bold text-siamPurple"><span class="text-sm font-medium mr-0.5">NT$</span>380</span>
-                        <button onclick="addToCart('黃金咖哩雞', 380)" class="bg-siamPurple hover:bg-siamPurple/90 text-white text-sm px-4 py-2 rounded-xl font-medium shadow-sm transition flex items-center space-x-1">
-                            <i class="fa-solid fa-plus text-xs"></i>
-                            <span>加入購物車</span>
-                        </button>
-                    </div>
+                <div class="flex flex-col items-center bg-siamBg px-2">
+                    <div id="circle-2" class="w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm transition">2</div>
+                    <span id="text-2" class="text-xs font-medium text-gray-400 mt-2">日期餐期</span>
                 </div>
-
-                <!-- 商品卡片 3 -->
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group hover:shadow-md transition duration-300">
-                    <div>
-                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
-                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80" alt="蝦醬空心菜" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-bold text-gray-900 mb-1">蝦醬空心菜</h3>
-                            <p class="text-gray-400 text-xs line-clamp-2 font-light">大火爆炒鮮脆空心菜，融入濃厚手工提煉蝦醬，鑊氣十足。</p>
-                        </div>
-                    </div>
-                    <div class="p-4 pt-0 flex items-center justify-between">
-                        <span class="text-xl font-bold text-siamPurple"><span class="text-sm font-medium mr-0.5">NT$</span>220</span>
-                        <button onclick="addToCart('蝦醬空心菜', 220)" class="bg-siamPurple hover:bg-siamPurple/90 text-white text-sm px-4 py-2 rounded-xl font-medium shadow-sm transition flex items-center space-x-1">
-                            <i class="fa-solid fa-plus text-xs"></i>
-                            <span>加入購物車</span>
-                        </button>
-                    </div>
+                <div class="flex flex-col items-center bg-siamBg px-2">
+                    <div id="circle-3" class="w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm transition">3</div>
+                    <span id="text-3" class="text-xs font-medium text-gray-400 mt-2">顧客資料</span>
                 </div>
-
             </div>
         </div>
 
-        <!-- 右側：固定式購物車 Sidepanel (桌機固定，手機寬度自適應) -->
-        <div class="w-full lg:w-96 bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm sticky top-28 self-start flex flex-col max-h-[calc(100vh-8rem)]">
-            <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-                <h2 class="text-lg font-bold text-gray-900 flex items-center">
-                    <i class="fa-solid fa-shopping-bag mr-2 text-siamGold"></i>明細隨時看
-                </h2>
-                <span id="cart-count" class="bg-siamBg text-siamPurple text-xs px-2 py-1 rounded-full font-bold">0 項商品</span>
-            </div>
-
-            <!-- 購物車品項滾動區 -->
-            <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 no-scrollbar min-h-[150px] max-h-[300px] pr-1">
-                <!-- 空購物車狀態 -->
-                <div id="empty-state" class="text-center py-8 text-gray-400 flex flex-col items-center justify-center space-y-2">
-                    <i class="fa-solid fa-receipt text-3xl text-gray-200"></i>
-                    <p class="text-sm font-light">尚未選擇任何美味菜色</p>
+        <div id="wizard-container" class="max-w-md mx-auto bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mb-8">
+            
+            <div id="panel-1" class="space-y-4">
+                <h2 class="text-lg font-bold text-gray-900 mb-2"><i class="fa-solid fa-shop text-siamGold mr-2"></i>第一步：請選擇用餐分店</h2>
+                <div class="space-y-2">
+                    <button onclick="selectStore('台北信義店')" class="w-full p-4 text-left border border-gray-200 rounded-xl hover:border-siamPurple hover:bg-purple-50/20 transition flex justify-between items-center group">
+                        <span class="font-medium text-gray-800">台北信義店</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-siamPurple transition"></i>
+                    </button>
+                    <button onclick="selectStore('桃園中正店')" class="w-full p-4 text-left border border-gray-200 rounded-xl hover:border-siamPurple hover:bg-purple-50/20 transition flex justify-between items-center group">
+                        <span class="font-medium text-gray-800">桃園中正店</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-siamPurple transition"></i>
+                    </button>
+                    <button onclick="selectStore('新竹竹北店')" class="w-full p-4 text-left border border-gray-200 rounded-xl hover:border-siamPurple hover:bg-purple-50/20 transition flex justify-between items-center group">
+                        <span class="font-medium text-gray-800">新竹竹北店</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-siamPurple transition"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- 計價與結帳區 -->
-            <div class="border-t border-gray-100 pt-4 mt-4 space-y-3">
-                <div class="flex justify-between text-sm text-gray-500">
-                    <span>小計 Subtotal</span>
-                    <span id="subtotal">NT$ 0</span>
+            <div id="panel-2" class="space-y-4 hidden">
+                <h2 class="text-lg font-bold text-gray-900 mb-2"><i class="fa-solid fa-calendar-days text-siamGold mr-2"></i>第二步：選擇日期與餐期</h2>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">用餐日期</label>
+                    <input type="date" id="input-date" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-siamPurple text-gray-700 bg-gray-50/50">
                 </div>
-                <div class="flex justify-between text-sm text-gray-500">
-                    <span>服務費 Service Charge (10%)</span>
-                    <span id="service-charge">NT$ 0</span>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">用餐餐期</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="selectPeriod('午餐')" id="btn-period-lunch" class="p-3 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 transition">午餐</button>
+                        <button onclick="selectPeriod('下午茶')" id="btn-period-tea" class="p-3 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 transition">下午茶</button>
+                        <button onclick="selectPeriod('晚餐')" id="btn-period-dinner" class="p-3 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 transition">晚餐</button>
+                    </div>
                 </div>
-                <div class="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
-                    <span class="font-bold text-gray-900">總計 Total</span>
-                    <span id="total-amount" class="text-2xl font-black text-siamPurple">NT$ 0</span>
+
+                <div class="pt-4 flex space-x-3">
+                    <button onclick="goBack(1)" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium rounded-xl transition text-sm">上一步</button>
+                    <button onclick="submitStep2()" class="flex-1 py-3 bg-siamPurple hover:bg-siamPurple/90 text-white font-medium rounded-xl transition text-sm shadow-md shadow-purple-900/10">下一步</button>
                 </div>
-                <button class="w-full mt-2 bg-siamPurple hover:bg-siamPurple/90 text-white font-bold py-3.5 rounded-xl transition duration-150 shadow-md shadow-siamPurple/10 tracking-widest text-sm">
-                    送出訂單
-                </button>
+            </div>
+
+            <div id="panel-3" class="space-y-4 hidden">
+                <h2 class="text-lg font-bold text-gray-900 mb-2"><i class="fa-solid fa-user-check text-siamGold mr-2"></i>第三步：填寫聯繫資料</h2>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">顧客姓名</label>
+                    <input type="text" id="cust-name" placeholder="請輸入您的真實姓名" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-siamPurple text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">行動電話</label>
+                    <input type="tel" id="cust-phone" placeholder="例：0912345678" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-siamPurple text-sm">
+                </div>
+
+                <div class="pt-4 flex space-x-3">
+                    <button onclick="goBack(2)" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium rounded-xl transition text-sm">上一步</button>
+                    <button onclick="submitStep3()" class="flex-1 py-3 bg-siamPurple hover:bg-siamPurple/90 text-white font-medium rounded-xl transition text-sm shadow-md shadow-purple-900/10">開始點餐</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="menu-container" class="hidden flex flex-col lg:flex-row gap-6 opacity-0 transition-opacity duration-500">
+            
+            <div class="flex-1 flex flex-col">
+                <div class="sticky top-16 bg-siamBg py-2 z-30 overflow-x-auto no-scrollbar flex space-x-2 border-b border-gray-200/60 mb-6">
+                    <button class="px-5 py-2 rounded-full text-sm font-medium bg-siamPurple text-white shadow-sm transition">熱門推薦</button>
+                    <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">經典肉類</button>
+                    <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100 transition">鮮腴海鮮</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group">
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <img src="https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=600&q=80" alt="冠軍月亮蝦餅" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-base font-bold text-gray-900 mb-1">冠軍月亮蝦餅</h3>
+                            <span class="text-lg font-black text-siamPurple">NT$ 420</span>
+                        </div>
+                        <div class="p-4 pt-0">
+                            <button onclick="addToCart('冠軍月亮蝦餅', 420)" class="w-full bg-siamPurple hover:bg-siamPurple/90 text-white text-sm py-2.5 rounded-xl font-medium transition">
+                                <i class="fa-solid fa-plus mr-1"></i>加入購物車
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group">
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80" alt="黃金咖哩雞" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-base font-bold text-gray-900 mb-1">黃金咖哩雞</h3>
+                            <span class="text-lg font-black text-siamPurple">NT$ 380</span>
+                        </div>
+                        <div class="p-4 pt-0">
+                            <button onclick="addToCart('黃金咖哩雞', 380)" class="w-full bg-siamPurple hover:bg-siamPurple/90 text-white text-sm py-2.5 rounded-xl font-medium transition">
+                                <i class="fa-solid fa-plus mr-1"></i>加入購物車
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-96 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm sticky top-24 self-start flex flex-col max-h-[calc(100vh-8rem)]">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                    <h2 class="text-base font-bold text-gray-900 flex items-center">
+                        <i class="fa-solid fa-shopping-bag mr-2 text-siamGold"></i>明細隨時看
+                    </h2>
+                    <span id="cart-count" class="bg-siamBg text-siamPurple text-xs px-2 py-1 rounded-full font-bold">0 項商品</span>
+                </div>
+                <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 no-scrollbar min-h-[120px] max-h-[250px] pr-1">
+                    <div id="empty-state" class="text-center py-8 text-gray-400 flex flex-col items-center justify-center space-y-2">
+                        <i class="fa-solid fa-receipt text-2xl text-gray-200"></i>
+                        <p class="text-xs font-light">尚未選擇任何美味菜色</p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-100 pt-4 mt-4 space-y-2.5">
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>小計</span>
+                        <span id="subtotal">NT$ 0</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>服務費 (10%)</span>
+                        <span id="service-charge">NT$ 0</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
+                        <span class="font-bold text-sm text-gray-900">總計</span>
+                        <span id="total-amount" class="text-xl font-black text-siamPurple">NT$ 0</span>
+                    </div>
+                    <button onclick="checkoutOrder()" class="w-full mt-2 bg-siamPurple hover:bg-siamPurple/90 text-white font-bold py-3 rounded-xl transition text-sm tracking-widest">
+                        送出訂單
+                    </button>
+                </div>
             </div>
         </div>
 
     </main>
 
-    <!-- 簡易購物車 Logic 控制指令碼 -->
     <script>
+        // 點餐與客戶狀態資料庫
+        let orderSession = {
+            store: '',
+            date: '',
+            period: '',
+            name: '',
+            phone: ''
+        };
         let cart = [];
 
-        function addToCart(name, price) {
-            const existingItem = cart.find(item => item.name === name);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ name, price, quantity: 1 });
+        // 1. 第一層控制：選擇分店
+        function selectStore(storeName) {
+            orderSession.store = storeName;
+            
+            // 更新進度條狀態
+            updateStepper(2, '50%');
+            
+            // 面板切換
+            document.getElementById('panel-1').classList.add('hidden');
+            document.getElementById('panel-2').classList.remove('hidden');
+        }
+
+        // 2. 第二層內部控制：選擇餐期
+        function selectPeriod(periodName) {
+            orderSession.period = periodName;
+            // 重置所有餐期按鈕顏色，並將選中的高亮
+            ['lunch', 'tea', 'dinner'].forEach(id => {
+                document.getElementById(`btn-period-${id}`).classList.remove('bg-siamPurple', 'text-white', 'border-siamPurple');
+            });
+            
+            const activeId = periodName === '午餐' ? 'lunch' : periodName === '下午茶' ? 'tea' : 'dinner';
+            document.getElementById(`btn-period-${activeId}`).classList.add('bg-siamPurple', 'text-white', 'border-siamPurple');
+        }
+
+        // 第二層送出驗證
+        function submitStep2() {
+            const dateValue = document.getElementById('input-date').value;
+            if (!dateValue) {
+                alert('請選擇用餐日期！');
+                return;
             }
+            if (!orderSession.period) {
+                alert('請選擇餐期（午餐/下午茶/晚餐）！');
+                return;
+            }
+            orderSession.date = dateValue;
+
+            // 更新進度條狀態
+            updateStepper(3, '100%');
+
+            // 面板切換
+            document.getElementById('panel-2').classList.add('hidden');
+            document.getElementById('panel-3').classList.remove('hidden');
+        }
+
+        // 3. 第三層送出驗證：進入點餐主畫面
+        function submitStep3() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+
+            if (!name) { alert('請填寫顧客姓名！'); return; }
+            if (!phone || !/^09\d{8}$/.test(phone)) { alert('請輸入正確的 10 碼行動電話號碼！'); return; }
+
+            orderSession.name = name;
+            orderSession.phone = phone;
+
+            // 成功收單前置作業，隱藏 Wizard 容器，顯示主選單
+            document.getElementById('wizard-container').classList.add('hidden');
+            
+            // 頂部狀態列同步更新顯示
+            document.getElementById('header-status').classList.remove('hidden');
+            document.getElementById('selected-store-tag').innerText = orderSession.store;
+            document.getElementById('selected-time-tag').innerText = `${orderSession.date} (${orderSession.period}) ｜ ${orderSession.name} 貴賓`;
+
+            // 秀出主選單並做淡入動畫
+            const menuContainer = document.getElementById('menu-container');
+            menuContainer.classList.remove('hidden');
+            setTimeout(() => { menuContainer.classList.remove('opacity-0'); }, 50);
+        }
+
+        // 共用：回上一步功能
+        function goBack(targetStep) {
+            if (targetStep === 1) {
+                updateStepper(1, '0%');
+                document.getElementById('panel-2').classList.add('hidden');
+                document.getElementById('panel-1').classList.remove('hidden');
+            } else if (targetStep === 2) {
+                updateStepper(2, '50%');
+                document.getElementById('panel-3').classList.add('hidden');
+                document.getElementById('panel-2').classList.remove('hidden');
+            }
+        }
+
+        // 輔助：更新進度條樣式
+        function updateStepper(activeStep, progressWidth) {
+            document.getElementById('step-progress-line').style.width = progressWidth;
+            for (let i = 1; i <= 3; i++) {
+                const circle = document.getElementById(`circle-${i}`);
+                const text = document.getElementById(`text-${i}`);
+                if (i <= activeStep) {
+                    circle.className = "w-8 h-8 rounded-full bg-siamPurple text-white flex items-center justify-center font-bold text-sm shadow-sm transition";
+                    text.className = "text-xs font-bold text-siamPurple mt-2";
+                } else {
+                    circle.className = "w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm transition";
+                    text.className = "text-xs font-medium text-gray-400 mt-2";
+                }
+            }
+        }
+
+        // ==================== 購物車前端運算邏輯 ====================
+        function addToCart(name, price) {
+            const existing = cart.find(i => i.name === name);
+            if (existing) { existing.quantity += 1; } 
+            else { cart.push({ name, price, quantity: 1 }); }
             updateCartUI();
         }
 
-        function updateQuantity(name, amount) {
-            const item = cart.find(item => item.name === name);
+        function updateQuantity(name, amt) {
+            const item = cart.find(i => i.name === name);
             if (item) {
-                item.quantity += amount;
-                if (item.quantity <= 0) {
-                    cart = cart.filter(i => i.name !== name);
-                }
+                item.quantity += amt;
+                if (item.quantity <= 0) cart = cart.filter(i => i.name !== name);
             }
             updateCartUI();
         }
 
         function updateCartUI() {
-            const cartItemsContainer = document.getElementById('cart-items');
+            const container = document.getElementById('cart-items');
             const emptyState = document.getElementById('empty-state');
-            const cartCount = document.getElementById('cart-count');
-            const subtotalEl = document.getElementById('subtotal');
-            const serviceChargeEl = document.getElementById('service-charge');
-            const totalAmountEl = document.getElementById('total-amount');
-
-            // 清空容器，保留空狀態元素
-            cartItemsContainer.innerHTML = '';
+            container.innerHTML = '';
 
             if (cart.length === 0) {
-                cartItemsContainer.appendChild(emptyState);
-                cartCount.innerText = '0 項商品';
-                subtotalEl.innerText = 'NT$ 0';
-                serviceChargeEl.innerText = 'NT$ 0';
-                totalAmountEl.innerText = 'NT$ 0';
+                container.appendChild(emptyState);
+                document.getElementById('cart-count').innerText = '0 品項';
+                document.getElementById('subtotal').innerText = 'NT$ 0';
+                document.getElementById('service-charge').innerText = 'NT$ 0';
+                document.getElementById('total-amount').innerText = 'NT$ 0';
                 return;
             }
 
-            let subtotal = 0;
-            let totalItems = 0;
-
+            let subtotal = 0, totalQty = 0;
             cart.forEach(item => {
                 subtotal += item.price * item.quantity;
-                totalItems += item.quantity;
-
-                const itemRow = document.createElement('div');
-                itemRow.className = 'flex items-center justify-between border-b border-gray-50/60 pb-3';
-                itemRow.innerHTML = `
+                totalQty += item.quantity;
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between border-b border-gray-50 pb-3';
+                row.innerHTML = `
                     <div class="flex-1 pr-2">
-                        <h4 class="text-sm font-bold text-gray-800">${item.name}</h4>
+                        <h4 class="text-xs font-bold text-gray-800">${item.name}</h4>
                         <span class="text-xs text-siamPurple font-medium">NT$ ${item.price}</span>
                     </div>
-                    <div class="flex items-center space-x-2.5 bg-gray-50 rounded-lg p-1 border border-gray-100">
-                        <button onclick="updateQuantity('${item.name}', -1)" class="w-6 h-6 rounded bg-white hover:bg-gray-100 flex items-center justify-center text-xs text-gray-500 shadow-sm transition">
-                            <i class="fa-solid fa-minus"></i>
-                        </button>
-                        <span class="text-sm font-bold text-gray-800 w-4 text-center">${item.quantity}</span>
-                        <button onclick="updateQuantity('${item.name}', 1)" class="w-6 h-6 rounded bg-white hover:bg-gray-100 flex items-center justify-center text-xs text-gray-500 shadow-sm transition">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
-                    </div>
-                `;
-                cartItemsContainer.appendChild(itemRow);
+                    <div class="flex items-center space-x-2 bg-gray-50 rounded-lg p-1 border border-gray-100">
+                        <button onclick="updateQuantity('${item.name}', -1)" class="w-5 h-5 rounded bg-white text-xs text-gray-500 shadow-sm"><i class="fa-solid fa-minus"></i></button>
+                        <span class="text-xs font-bold text-gray-800 w-4 text-center">${item.quantity}</span>
+                        <button onclick="updateQuantity('${item.name}', 1)" class="w-5 h-5 rounded bg-white text-xs text-gray-500 shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                    </div>`;
+                container.appendChild(row);
             });
 
-            const serviceCharge = Math.round(subtotal * 0.1);
-            const total = subtotal + serviceCharge;
+            const svc = Math.round(subtotal * 0.1);
+            document.getElementById('cart-count').innerText = `${totalQty} 項商品`;
+            document.getElementById('subtotal').innerText = `NT$ ${subtotal.toLocaleString()}`;
+            document.getElementById('service-charge').innerText = `NT$ ${svc.toLocaleString()}`;
+            document.getElementById('total-amount').innerText = `NT$ ${(subtotal + svc).toLocaleString()}`;
+        }
 
-            cartCount.innerText = `${totalItems} 項商品`;
-            subtotalEl.innerText = `NT$ ${subtotal.toLocaleString()}`;
-            serviceChargeEl.innerText = `NT$ ${serviceCharge.toLocaleString()}`;
-            totalAmountEl.innerText = `NT$ ${total.toLocaleString()}`;
+        // 送出最終訂單資料摘要測試
+        function checkoutOrder() {
+            if (cart.length === 0) { alert('購物車還是空的喔！'); return; }
+            alert(`【訂單送出成功】\n分店：${orderSession.store}\n時間：${orderSession.date} (${orderSession.period})\n訂購人：${orderSession.name} (${orderSession.phone})\n總金額：${document.getElementById('total-amount').innerText}`);
         }
     </script>
 </body>
