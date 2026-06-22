@@ -31,8 +31,8 @@
     <div class="bg-gray-900 text-white text-xs px-4 py-1 flex justify-between items-center z-50">
         <span>⚙️ 系統環境模擬切換：</span>
         <div class="space-x-2">
-            <button onclick="switchView('frontend-wizard')" class="bg-siamPurple px-2 py-0.5 rounded">顧客前台</button>
-            <button onclick="switchView('backend-login')" class="bg-emerald-600 px-2 py-0.5 rounded">管理後台</button>
+            <button onclick="switchView('frontend-wizard')" class="bg-siamPurple px-2 py-0.5 rounded shadow-sm hover:bg-opacity-90 transition">顧客前台</button>
+            <button onclick="switchView('backend-login')" class="bg-emerald-600 px-2 py-0.5 rounded shadow-sm hover:bg-opacity-90 transition">管理後台</button>
         </div>
     </div>
 
@@ -43,73 +43,79 @@
                     <i class="fa-solid fa-utensils mr-2 text-siamGold"></i>SIAM MORE
                 </span>
                 <div class="flex items-center space-x-2 text-xs">
-                    <span class="border border-gray-300 px-2 py-1 rounded bg-gray-50"><i class="fa-solid fa-globe mr-1"></i>中文</span>
-                    <span id="fe-info-tag" class="text-gray-500 hidden bg-purple-50 text-siamPurple px-2 py-1 rounded border border-purple-100 font-medium"></span>
+                    <span class="border border-gray-300 px-2 py-1 rounded bg-gray-50 font-medium"><i class="fa-solid fa-globe mr-1"></i>中文</span>
+                    <span id="fe-info-tag" class="text-gray-500 hidden bg-purple-50 text-siamPurple px-2.5 py-1 rounded border border-purple-100 font-bold transition-all"></span>
                 </div>
             </div>
         </header>
 
         <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
-            <div id="wizard-box" class="max-w-md mx-auto bg-white rounded-2xl border border-gray-200 p-6 shadow-sm my-8">
+            <div id="wizard-box" class="max-w-md mx-auto bg-white rounded-2xl border border-gray-200 p-6 shadow-md my-8 transition-all">
                 <div id="step-1" class="space-y-4">
                     <h2 class="text-lg font-bold text-gray-900 text-center mb-4">請選擇用餐方式</h2>
                     <div class="grid grid-cols-2 gap-4">
                         <button onclick="setOrderType('內用')" class="p-6 border-2 border-gray-100 rounded-2xl hover:border-siamPurple hover:bg-purple-50/20 text-center transition group">
                             <i class="fa-solid fa-chair text-3xl text-siamGold group-hover:scale-110 transition mb-2"></i>
-                            <div class="font-bold text-gray-800">門市內用</div>
+                            <div class="font-bold text-gray-800 text-sm">門市內用</div>
                         </button>
                         <button onclick="setOrderType('外帶')" class="p-6 border-2 border-gray-100 rounded-2xl hover:border-siamPurple hover:bg-purple-50/20 text-center transition group">
                             <i class="fa-solid fa-bag-shopping text-3xl text-siamGold group-hover:scale-110 transition mb-2"></i>
-                            <div class="font-bold text-gray-800">外帶自取</div>
+                            <div class="font-bold text-gray-800 text-sm">外帶自取</div>
                         </button>
                     </div>
                 </div>
 
                 <div id="step-2" class="space-y-4 hidden">
-                    <h2 class="text-base font-bold text-gray-900"><i class="fa-solid fa-calendar mr-2 text-siamGold"></i>選擇日期與取餐時段</h2>
+                    <h2 class="text-base font-bold text-gray-900 flex items-center"><i class="fa-solid fa-calendar mr-2 text-siamGold"></i>選擇日期與取餐時段</h2>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">用餐日期</label>
-                        <input type="date" id="fd-date" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">用餐日期</label>
+                        <input type="date" id="fd-date" class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-siamPurple bg-gray-50/30">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">時段分流</label>
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">時段分流</label>
                         <div class="grid grid-cols-3 gap-2" id="time-grid-box"></div>
                     </div>
-                    <button onclick="submitStep2()" class="w-full py-3 bg-siamPurple text-white font-bold rounded-xl text-sm mt-4 shadow-sm">繼續</button>
+                    <div class="flex space-x-2 pt-2">
+                        <button onclick="resetWizard()" class="w-1/3 py-3 bg-gray-100 text-gray-500 font-bold rounded-xl text-sm hover:bg-gray-200 transition">上一步</button>
+                        <button onclick="submitStep2()" class="w-2/3 py-3 bg-siamPurple text-white font-bold rounded-xl text-sm shadow-sm hover:bg-opacity-95 transition">繼續</button>
+                    </div>
                 </div>
 
                 <div id="step-3" class="space-y-4 hidden">
-                    <h2 class="text-base font-bold text-gray-900"><i class="fa-solid fa-user-pen mr-2 text-siamGold"></i>填寫顧客資料</h2>
+                    <h2 class="text-base font-bold text-gray-900 flex items-center"><i class="fa-solid fa-user-pen mr-2 text-siamGold"></i>填寫顧客資料</h2>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">顧客姓名 NAME</label>
-                        <input type="text" id="fd-name" placeholder="請輸入姓名" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">顧客姓名 NAME</label>
+                        <input type="text" id="fd-name" placeholder="請輸入姓名" class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-siamPurple">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">行動電話 PHONE</label>
-                        <input type="tel" id="fd-phone" placeholder="例：0912345678" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">行動電話 PHONE</label>
+                        <input type="tel" id="fd-phone" placeholder="例：0912345678" class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-siamPurple">
                     </div>
-                    <button onclick="submitStep3()" class="w-full py-3 bg-siamPurple text-white font-bold rounded-xl text-sm shadow-sm">進入菜單</button>
+                    <div class="flex space-x-2 pt-2">
+                        <button onclick="document.getElementById('step-3').classList.add('hidden'); document.getElementById('step-2').classList.remove('hidden');" class="w-1/3 py-3 bg-gray-100 text-gray-500 font-bold rounded-xl text-sm hover:bg-gray-200 transition">上一步</button>
+                        <button onclick="submitStep3()" class="w-2/3 py-3 bg-siamPurple text-white font-bold rounded-xl text-sm shadow-md hover:bg-opacity-95 transition">進入菜單</button>
+                    </div>
                 </div>
             </div>
 
-            <div id="main-menu-region" class="hidden flex flex-col lg:flex-row gap-6">
+            <div id="main-menu-region" class="hidden flex flex-col lg:flex-row gap-6 opacity-0 transition-opacity duration-300">
                 <div class="flex-1">
                     <div id="fe-cat-bar" class="sticky top-16 bg-siamBg py-2 z-30 overflow-x-auto no-scrollbar flex space-x-2 border-b border-gray-200/60 mb-6"></div>
                     <div id="fe-dishes-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
                 </div>
                 
                 <div class="w-full lg:w-80 bg-white rounded-2xl border border-gray-200 p-4 shadow-sm h-fit sticky top-20">
-                    <h3 class="font-bold text-gray-900 border-b pb-2 mb-3 flex items-center"><i class="fa-solid fa-basket-shopping mr-2 text-siamGold"></i>預點餐明細</h3>
+                    <h3 class="font-bold text-gray-900 border-b pb-2 mb-3 flex items-center text-sm"><i class="fa-solid fa-basket-shopping mr-2 text-siamGold"></i>預點餐明細</h3>
                     <div id="fe-cart-items" class="space-y-3 max-h-60 overflow-y-auto no-scrollbar"></div>
                     
-                    <div class="mt-4 p-3 bg-amber-50/50 border border-amber-100 rounded-xl">
-                        <div class="text-[11px] font-bold text-amber-800 mb-1.5"><i class="fa-solid fa-star mr-1 text-siamGold"></i>重點加購推薦</div>
-                        <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-100 text-xs">
+                    <div class="mt-4 p-3 bg-amber-50/60 border border-amber-100 rounded-xl shadow-inner">
+                        <div class="text-[11px] font-bold text-amber-800 mb-1.5 flex items-center"><i class="fa-solid fa-star mr-1 text-siamGold"></i>重點加購推薦</div>
+                        <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-100 text-xs shadow-sm">
                             <div>
                                 <span class="font-bold text-gray-800 block">厚泰奶布丁</span>
                                 <span class="text-siamPurple font-black">NT$ 100</span>
                             </div>
-                            <button onclick="addToCart('厚泰奶布丁', 100)" class="bg-siamGold text-white px-2.5 py-1 rounded-md font-bold">加購</button>
+                            <button onclick="addToCart('厚泰奶布丁', 100)" class="bg-siamGold hover:bg-opacity-90 text-white px-3 py-1 rounded-md font-bold transition">加購</button>
                         </div>
                     </div>
 
@@ -117,9 +123,9 @@
                         <div class="flex justify-between text-gray-500"><span>小計</span><span id="fe-subtotal">NT$ 0</span></div>
                         <div class="flex justify-between text-gray-500"><span>服務費(10%)</span><span id="fe-svc">NT$ 0</span></div>
                         <div class="flex justify-between items-center pt-2 border-t border-dashed font-bold text-sm text-gray-900">
-                            <span>TOTAL</span><span id="fe-total" class="text-lg text-siamPurple font-black">NT$ 0</span>
+                            <span>TOTAL</span><span id="fe-total" class="text-base text-siamPurple font-black">NT$ 0</span>
                         </div>
-                        <button onclick="submitFinalOrder()" class="w-full bg-siamPurple text-white py-3 rounded-xl font-bold mt-2 tracking-wider">確認送出預點</button>
+                        <button onclick="submitFinalOrder()" class="w-full bg-siamPurple text-white py-3 rounded-xl font-bold mt-2 tracking-wider hover:bg-opacity-95 transition shadow-md">確認送出預點</button>
                     </div>
                 </div>
             </div>
@@ -127,7 +133,7 @@
     </div>
 
     <div id="backend-login-view" class="hidden flex-1 bg-gradient-to-tr from-gray-900 to-slate-800 flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 flex flex-col justify-center">
+        <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 flex flex-col justify-center border border-gray-100">
             <div class="text-center mb-6">
                 <span class="text-2xl font-black text-siamPurple tracking-widest block">SIAM MORE</span>
                 <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold mt-1 inline-block">門市智慧後台</span>
@@ -135,19 +141,19 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-400 mb-1">EMAIL</label>
-                    <input type="text" id="login-email" value="admin@eatogether.com.tw" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                    <input type="text" id="login-email" value="admin@eatogether.com.tw" class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 bg-gray-50/50">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-400 mb-1">密碼 PASSWORD</label>
-                    <input type="password" id="login-pass" value="123456" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                    <input type="password" id="login-pass" value="123456" class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 bg-gray-50/50">
                 </div>
-                <button onclick="doLogin()" class="w-full bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-sm tracking-widest transition shadow-lg">登入後台</button>
+                <button onclick="doLogin()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 rounded-xl text-sm tracking-widest transition shadow-lg">登入後台</button>
             </div>
         </div>
     </div>
 
     <div id="backend-main-view" class="hidden flex-1 flex bg-gray-100">
-        <aside class="w-64 bg-backendDark text-gray-400 flex flex-col justify-between">
+        <aside class="w-64 bg-backendDark text-gray-400 flex flex-col justify-between shadow-xl">
             <div>
                 <div class="p-5 border-b border-gray-800/60 flex items-center space-x-2 text-white">
                     <i class="fa-solid fa-leaf text-emerald-500"></i>
@@ -164,7 +170,7 @@
             </div>
             <div class="p-4 border-t border-gray-800/60 text-center">
                 <div class="text-[10px] text-gray-500 mb-2">門市：台北信義店</div>
-                <button onclick="switchView('frontend-wizard')" class="w-full bg-red-900/40 text-red-200 py-2 rounded-xl text-xs font-bold transition">登出系統</button>
+                <button onclick="switchView('frontend-wizard')" class="w-full bg-red-950/40 text-red-200 py-2 rounded-xl text-xs font-bold transition hover:bg-red-900/40">登出系統</button>
             </div>
         </aside>
 
@@ -172,26 +178,29 @@
             <div id="back-tab-dashboard" class="space-y-6">
                 <div class="flex justify-between items-center">
                     <h2 class="text-xl font-black text-gray-800">📊 門市即時數據大屏</h2>
-                    <button onclick="alert('Excel匯出成功！')" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm">
+                    <button onclick="alert('Excel匯出成功！')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
                         <i class="fa-solid fa-file-excel mr-1.5"></i>匯出 Excel 報表
                     </button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
-                        <div><span class="text-xs text-gray-400 font-bold block">總訂單數</span><span id="stat-order-count" class="text-3xl font-black text-gray-800 block mt-1">0 筆</span></div>
+                        <div><span class="text-xs text-gray-400 font-bold block">總訂單數</span><span id="stat-order-count" class="text-2xl font-black text-gray-800 block mt-1">0 筆</span></div>
                         <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-siamPurple text-xl"><i class="fa-solid fa-receipt"></i></div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
-                        <div><span class="text-xs text-gray-400 font-bold block">預估營業收入</span><span id="stat-total-revenue" class="text-3xl font-black text-emerald-700 block mt-1">NT$ 0</span></div>
+                        <div><span class="text-xs text-gray-400 font-bold block">預估營業收入</span><span id="stat-total-revenue" class="text-2xl font-black text-emerald-700 block mt-1">NT$ 0</span></div>
                         <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 text-xl"><i class="fa-solid fa-coins"></i></div>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
-                        <div><span class="text-xs text-gray-400 font-bold block">客群管道佔比</span><span id="stat-ratio" class="text-xs font-bold text-gray-700 block mt-2">內用 0 筆 ｜ 外帶 0 筆</span></div>
-                        <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-700 text-xl"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center space-y-2">
+                        <div class="flex justify-between text-xs font-bold text-gray-400"><span>管道佔比</span><span id="stat-ratio" class="text-gray-600">內用 0 ｜ 外帶 0</span></div>
+                        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden flex">
+                            <div id="bar-ratio-dinein" class="bg-siamPurple h-full transition-all duration-500" style="width: 50%"></div>
+                            <div id="bar-ratio-takeout" class="bg-siamGold h-full transition-all duration-500" style="width: 50%"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 bg-gray-50/70 font-bold text-sm text-gray-800"><i class="fa-solid fa-kitchen-set mr-2 text-siamGold"></i>全品項智能備料總量排行 (即時加總統計)</div>
+                    <div class="p-4 border-b border-gray-100 bg-gray-50/70 font-bold text-xs text-gray-800"><i class="fa-solid fa-kitchen-set mr-2 text-siamGold"></i>全品項智能備料總量排行 (即時加總統計)</div>
                     <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto no-scrollbar" id="stat-ingredients-box"></div>
                 </div>
             </div>
@@ -204,7 +213,7 @@
                     <div class="grid grid-cols-7 gap-2" id="calendar-grid-box"></div>
                 </div>
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-4">
-                    <div class="p-4 border-b border-gray-100 bg-gray-50 font-bold text-sm">📋 動態訂單流水帳</div>
+                    <div class="p-4 border-b border-gray-100 bg-gray-50 font-bold text-xs">📋 動態訂單流水帳</div>
                     <div class="p-4 overflow-x-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
@@ -225,13 +234,13 @@
         </main>
     </div>
 
-    <div id="edit-order-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div id="edit-order-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="font-bold text-gray-900 text-sm flex items-center">
                     <i class="fa-solid fa-user-gear text-emerald-600 mr-2"></i>外場編輯修改明細
                 </h3>
-                <button onclick="closeEditModal()" class="text-gray-400 text-sm"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 transition text-sm"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="bg-gray-50 p-2.5 rounded-xl text-[11px] text-gray-500 space-y-0.5 mb-4">
                 <div>貴賓姓名：<span id="modal-cust-name" class="font-bold text-gray-700"></span></div>
@@ -239,12 +248,11 @@
             </div>
             <div id="modal-items-container" class="flex-1 overflow-y-auto space-y-3 no-scrollbar pr-1 divide-y divide-gray-50"></div>
             <div class="border-t pt-4 mt-4 flex space-x-3">
-                <button onclick="closeEditModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-bold rounded-xl text-xs">取消返回</button>
-                <button onclick="saveOrderEdits()" class="flex-1 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md">確認儲存修改</button>
+                <button onclick="closeEditModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-bold rounded-xl text-xs transition hover:bg-gray-200">取消返回</button>
+                <button onclick="saveOrderEdits()" class="flex-1 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition hover:bg-emerald-800">確認儲存修改</button>
             </div>
         </div>
     </div>
-
 
     <script>
         const menuRepository = [
@@ -271,21 +279,105 @@
             { category: '開胃涼拌', name: '酸辣蒜黃瓜(小菜③)', price: 70, spicy: 1, adjustable: false },
             { category: '開胃涼拌', name: '泰味三拼(小菜3款)', price: 170, spicy: 0, adjustable: false, subdesc: '組合內含：花椰菜(0辣)、雲耳(2辣)、蒜黃瓜(1辣)' },
 
-            // 3. 大口吃海鮮
-            { category: '大口吃海鮮', name: '清香檸檬魚', price: 500, spicy: 1, adjustable: true },
+            // 3. 牛香四溢
+            { category: '牛香四溢', name: '東北淚之虎', price: 500, spicy: 0, adjustable: false },
+            { category: '牛香四溢', name: '爆爽辣炒牛', price: 360, spicy: 2, adjustable: true },
+            { category: '牛香四溢', name: '蠔氣爆炒牛', price: 360, spicy: 0, adjustable: false },
+
+            // 4. 厚實好豬
+            { category: '厚實好豬', name: '香烤松阪豬', price: 390, spicy: 0, adjustable: false },
+            { category: '厚實好豬', name: '扒飯打拋豬', price: 320, spicy: 2, adjustable: true },
+            { category: '厚實好豬', name: '泰炸香料豬', price: 330, spicy: 1, adjustable: false },
+
+            // 5. 鮮嫩多雞
+            { category: '鮮嫩多雞', name: '黃金咖哩雞', price: 330, spicy: 0, adjustable: false },
+            { category: '鮮嫩多雞', name: '椰香綠咖哩雞', price: 330, spicy: 2, adjustable: false },
+            { category: '鮮嫩多雞', name: '醬烤沙嗲雞', price: 300, spicy: 0, adjustable: false },
+            { category: '鮮嫩多雞', name: '咔滋椒麻雞', price: 330, spicy: 2, adjustable: true },
+
+            // 6. 大口吃海鮮
+            { category: '大口吃海鮮', name: '清香檸檸魚', price: 500, spicy: 1, adjustable: true },
             { category: '大口吃海鮮', name: '冠軍月亮蝦餅', price: 480, spicy: 0, adjustable: false },
             { category: '大口吃海鮮', name: '黃咖哩軟殼蟹', price: 580, spicy: 1, adjustable: false },
+            { category: '大口吃海鮮', name: '泰式鹹蛋中卷', price: 480, spicy: 0, adjustable: false },
+            { category: '大口吃海鮮', name: '檸香蒸扁鱈', price: 500, spicy: 2, adjustable: false },
+            { category: '大口吃海鮮', name: '羅望子龍眼蝦球', price: 420, spicy: 1, adjustable: false },
+            { category: '大口吃海鮮', name: '濃香紅咖哩魚片', price: 370, spicy: 2, adjustable: false },
+            { category: '大口吃海鮮', name: '香料爐烤紙包魚', price: 520, spicy: 2, adjustable: false },
+            { category: '大口吃海鮮', name: '蒜香金沙奶油蟹', price: 580, spicy: 0, adjustable: false },
 
-            // 4. 有點甜
+            // 7. 下飯豆腐蛋
+            { category: '下飯豆腐蛋', name: '厚煎海鮮烘蛋', price: 330, spicy: 0, adjustable: false },
+            { category: '下飯豆腐蛋', name: '綠咖哩嫩炸豆腐', price: 260, spicy: 2, adjustable: false },
+            { category: '下飯豆腐蛋', name: '打拋炸蛋', price: 330, spicy: 2, adjustable: false },
+            { category: '下飯豆腐蛋', name: '泰滑蝦扯蛋', price: 350, spicy: 0, adjustable: false },
+            { category: '下飯豆腐蛋', name: '金湯椰香豆腐煲', price: 380, spicy: 0, adjustable: false },
+
+            // 8. 一點都不青菜
+            { category: '一點都不青菜', name: '泰炒什錦蔬菜', price: 240, spicy: 0, adjustable: false },
+            { category: '一點都不青菜', name: '蝦醬空心菜', price: 240, spicy: 1, adjustable: false },
+            { category: '一點都不青菜', name: '泰北鄉村茄', price: 240, spicy: 1, adjustable: false },
+            { category: '一點都不青菜', name: '泰香炒野蓮', price: 260, spicy: 0, adjustable: false },
+
+            // 9. 吃飽來點
+            { category: '吃飽來點', name: '小象炒飯', price: 260, spicy: 0, adjustable: false },
+            { category: '吃飽來點', name: '饗泰多泰炒河粉', price: 330, spicy: 0, adjustable: true },
+            { category: '吃飽來點', name: '鮮蝦寬粉煲/小', price: 390, spicy: 1, adjustable: false },
+            { category: '吃飽來點', name: '鮮蝦寬粉煲/大', price: 450, spicy: 1, adjustable: false },
+            { category: '吃飽來點', name: '泰國香米飯/人', price: 35, spicy: 0, adjustable: false },
+
+            // 10. 暖胃好湯
+            { category: '暖胃好湯', name: '冬蔭海鮮湯', price: 390, spicy: 2, adjustable: false },
+            { category: '暖胃好湯', name: '蝦仁玉米湯', price: 380, spicy: 0, adjustable: false },
+            { category: '暖胃好湯', name: '香茅椰肉蛤蜊雞湯', price: 380, spicy: 0, adjustable: false },
+
+            // 11. 有點甜
+            { category: '有點甜', name: '摩摩喳喳', price: 100, spicy: 0, adjustable: false },
+            { category: '有點甜', name: '椰香黑糯米(冰/熱)', price: 100, spicy: 0, adjustable: false },
+            { category: '有點甜', name: '椰子冰淇淋', price: 100, spicy: 0, adjustable: false },
+            { category: '有點甜', name: '椰香熱帶冰沙', price: 130, spicy: 0, adjustable: false },
             { category: '有點甜', name: '厚泰奶布丁', price: 100, spicy: 0, adjustable: false },
-            { category: '有點甜', name: '摩摩喳喳', price: 100, spicy: 0, adjustable: false }
+
+            // 12. 來杯泰飲
+            { category: '來杯泰飲', name: '泰式奶茶(冰/熱)', price: 120, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '檸檬茶', price: 120, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '荔枝香芒泡泡', price: 140, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '椰子汁', price: 150, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '泰多凍檸綠', price: 120, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '可樂', price: 60, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '泰象啤酒', price: 150, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '勝獅啤酒', price: 140, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '清香舒芙茶', price: 100, spicy: 0, adjustable: false },
+            { category: '來杯泰飲', name: '穀香蕎麥茶', price: 100, spicy: 0, adjustable: false },
+
+            // 13. 來點蔬食
+            { category: '來點蔬食', name: '(素)蛋素青木瓜涼拌', price: 260, spicy: 0, adjustable: false },
+            { category: '來點蔬食', name: '(素)蛋素什錦炒飯', price: 280, spicy: 0, adjustable: false },
+            { category: '來點蔬食', name: '(素)蛋素炒河粉', price: 260, spicy: 0, adjustable: false },
+            { category: '來點蔬食', name: '(素)清炒空心菜', price: 220, spicy: 0, adjustable: false },
+            { category: '來點蔬食', name: '(素)清炒什錦蔬菜', price: 220, spicy: 0, adjustable: false },
+            { category: '來點蔬食', name: '(素)清炒高麗菜', price: 220, spicy: 0, adjustable: false },
+            { category: '來點蔬食', name: '(素)鮮菇玉米湯', price: 320, spicy: 0, adjustable: false },
+            { category: '來點蔬食', name: '(素)香茅椰肉野菇湯', price: 300, spicy: 0, adjustable: false },
+
+            // 14. 饗泰多 TOP 10 
+            { category: '饗泰多TOP10', name: '冠軍月亮蝦餅', price: 480, spicy: 0, adjustable: false },
+            { category: '饗泰多TOP10', name: '黃咖哩軟殼蟹', price: 580, spicy: 1, adjustable: false },
+            { category: '饗泰多TOP10', name: '清香檸檬魚', price: 500, spicy: 1, adjustable: true },
+            { category: '饗泰多TOP10', name: '香煎瀑布牛涼拌', price: 410, spicy: 1, adjustable: true },
+            { category: '饗泰多TOP10', name: '酸辣海鮮涼拌', price: 400, spicy: 2, adjustable: false },
+            { category: '饗泰多TOP10', name: '咔滋椒麻雞', price: 330, spicy: 2, adjustable: true },
+            { category: '饗泰多TOP10', name: '冬蔭海鮮湯', price: 390, spicy: 2, adjustable: false },
+            { category: '饗泰多TOP10', name: '厚煎海鮮烘蛋', price: 330, spicy: 0, adjustable: false },
+            { category: '饗泰多TOP10', name: '椰香綠咖哩雞', price: 330, spicy: 2, adjustable: false },
+            { category: '饗泰多TOP10', name: '醬烤沙嗲雞', price: 300, spicy: 0, adjustable: false }
         ];
 
-        // 模擬初始數據
+        // 模擬數據
         const initialMockOrders = [
-            { id: 1, type: '內用', date: '2026-06-23', time: '12:00', name: '邱安琪', phone: '0975257651', items: [{name: '黃咖哩軟殼蟹', qty: 2, price: 580}, {name: '厚泰奶布丁', qty: 2, price: 100}], total: 1496 },
-            { id: 2, type: '內用', date: '2026-06-23', time: '12:30', name: '江養妍', phone: '0972378096', items: [{name: '楓糖炙烤子排', qty: 1, price: 610}, {name: '魚鬆西瓜涼拌', qty: 2, price: 350}], total: 1441 },
-            { id: 3, type: '外帶', date: '2026-06-23', time: '18:00', name: '焦小姐', phone: '0912907626', items: [{name: '冠軍月亮蝦餅', qty: 1, price: 480}, {name: '蒜酥松坂蝦醬拌飯', qty: 1, price: 420}], total: 990 }
+            { id: 1001, type: '內用', date: '2026-06-23', time: '12:00', name: '邱安琪', phone: '0975257651', items: [{name: '黃咖哩軟殼蟹', qty: 2, price: 580}, {name: '厚泰奶布丁', qty: 2, price: 100}], total: 1496 },
+            { id: 1002, type: '內用', date: '2026-06-23', time: '12:30', name: '江養妍', phone: '0972378096', items: [{name: '楓糖炙烤子排', qty: 1, price: 610}, {name: '魚鬆西瓜涼拌', qty: 2, price: 350}], total: 1441 },
+            { id: 1003, type: '外帶', date: '2026-06-23', time: '18:00', name: '焦小姐', phone: '0912907626', items: [{name: '冠軍月亮蝦餅', qty: 1, price: 480}, {name: '蒜酥松坂蝦醬拌飯', qty: 1, price: 420}], total: 990 }
         ];
 
         if (!localStorage.getItem('SIAM_ORDERS')) {
@@ -298,7 +390,6 @@
         let editingOrderId = null; 
         let editingItemsTemp = [];
 
-        // 介面導覽切換
         function switchView(viewId) {
             document.getElementById('frontend-view').classList.add('hidden');
             document.getElementById('backend-login-view').classList.add('hidden');
@@ -312,7 +403,7 @@
             }
         }
 
-        // --- 前台顧客操作代碼 ---
+        // --- 前台顧客邏輯區 ---
         function resetWizard() {
             document.getElementById('wizard-box').classList.remove('hidden');
             document.getElementById('main-menu-region').classList.add('hidden');
@@ -325,6 +416,11 @@
             const times = ['11:30', '12:00', '12:30', '13:00', '13:30', '18:00', '18:30', '19:00', '19:30'];
             const box = document.getElementById('time-grid-box'); box.innerHTML = '';
             times.forEach(t => { box.innerHTML += `<button onclick="setOrderTime('${t}')" id="time-btn-${t.replace(':','')}" class="p-2 border border-gray-200 rounded-xl text-xs hover:border-siamPurple transition">${t}</button>`; });
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('fd-date').value = todayStr;
+            document.getElementById('fd-date').min = todayStr;
+
             document.getElementById('step-2').classList.remove('hidden');
         }
         function setOrderTime(t) {
@@ -334,36 +430,54 @@
         }
         function submitStep2() {
             currentOrderState.date = document.getElementById('fd-date').value;
-            if(!currentOrderState.date || !currentOrderState.time) { alert('請填妥時間！'); return; }
+            if(!currentOrderState.date || !currentOrderState.time) { alert('請填妥日期與取餐時段！'); return; }
             document.getElementById('step-2').classList.add('hidden'); document.getElementById('step-3').classList.remove('hidden');
         }
         function submitStep3() {
             currentOrderState.name = document.getElementById('fd-name').value.trim(); currentOrderState.phone = document.getElementById('fd-phone').value.trim();
-            if(!currentOrderState.name || !/^09\d{8}$/.test(currentOrderState.phone)) { alert('請輸入完整聯絡資訊！'); return; }
-            document.getElementById('wizard-box').classList.add('hidden'); document.getElementById('main-menu-region').classList.remove('hidden');
+            if(!currentOrderState.name || !/^09\d{8}$/.test(currentOrderState.phone)) { alert('請填寫完整資訊與正確的手機號碼！'); return; }
+            
+            document.getElementById('wizard-box').classList.add('hidden');
+            const mmr = document.getElementById('main-menu-region');
+            mmr.classList.remove('hidden');
+            setTimeout(() => mmr.classList.remove('opacity-0'), 50);
+
             const tag = document.getElementById('fe-info-tag');
-            tag.innerText = `【${currentOrderState.type}】${currentOrderState.date} ${currentOrderState.time} / ${currentOrderState.name}`; tag.classList.remove('hidden');
+            tag.innerText = `【${currentOrderState.type}】${currentOrderState.date} ${currentOrderState.time} / ${currentOrderState.name} 貴賓`; tag.classList.remove('hidden');
             renderFeCategoryBar(); renderFeDishes();
         }
         function renderFeCategoryBar() {
             const categories = [...new Set(menuRepository.map(m => m.category))];
             const bar = document.getElementById('fe-cat-bar'); bar.innerHTML = '';
             categories.forEach(cat => {
-                const active = cat === currentFeCat ? 'bg-siamPurple text-white' : 'bg-white text-gray-600';
-                bar.innerHTML += `<button onclick="changeFeCategory('${cat}')" class="px-4 py-2 rounded-full text-xs font-bold shadow-sm flex-shrink-0 transition ${active}">${cat}</button>`;
+                const active = cat === currentFeCat ? 'bg-siamPurple text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100';
+                bar.innerHTML += `<button onclick="changeFeCategory('${cat}')" class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm flex-shrink-0 transition ${active}">${cat}</button>`;
             });
         }
         function changeFeCategory(cat) { currentFeCat = cat; renderFeCategoryBar(); renderFeDishes(); }
         function renderFeDishes() {
             const grid = document.getElementById('fe-dishes-grid'); grid.innerHTML = '';
             menuRepository.filter(m => m.category === currentFeCat).forEach(dish => {
-                let chili = ''; if(dish.spicy > 0) { for(let i=0;i<dish.spicy;i++) chili += `<i class="fa-solid fa-chili-pepper text-red-500 text-xs"></i>`; }
+                let chili = ''; if(dish.spicy > 0) { for(let i=0;i<dish.spicy;i++) chili += `<i class="fa-solid fa-chili-pepper text-red-500 text-[10px] mr-0.5"></i>`; }
+                const badge = dish.adjustable ? `<span class="text-[9px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-normal">可調辣</span>` : `<span class="text-[9px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded font-normal">辣度固定</span>`;
+                const desc = dish.subdesc ? `<p class="text-[10px] text-gray-400 mt-0.5 font-light leading-tight">${dish.subdesc}</p>` : '';
+                
                 grid.innerHTML += `
-                    <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between p-3 text-xs">
-                        <div><span class="font-bold text-gray-800">${dish.name}</span></div>
-                        <div class="flex justify-between items-center mt-3">
-                            <span class="font-black text-siamPurple">NT$ ${dish.price}</span>
-                            <button onclick="addToCart('${dish.name}', ${dish.price})" class="bg-siamPurple text-white px-2.5 py-1 rounded-lg">加入</button>
+                    <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between p-3 transition duration-300 hover:shadow-md">
+                        <div>
+                            <div class="aspect-[4/3] bg-gray-50 rounded-lg overflow-hidden relative mb-2">
+                                <img src="${dish.name}.jpg" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80'">
+                            </div>
+                            <div class="flex justify-between items-start gap-1">
+                                <span class="font-bold text-xs text-gray-800 leading-tight">${dish.name}</span>
+                                ${badge}
+                            </div>
+                            ${desc}
+                            <div class="h-4 flex items-center mt-1">${chili ? chili : '<span class="text-[9px] text-gray-400">不辣</span>'}</div>
+                        </div>
+                        <div class="flex justify-between items-center mt-2.5 pt-2 border-t border-gray-50">
+                            <span class="text-xs font-black text-siamPurple">NT$ ${dish.price}</span>
+                            <button onclick="addToCart('${dish.name}', ${dish.price})" class="bg-siamPurple text-white text-[10px] px-3 py-1 rounded-lg font-bold shadow-sm">加入</button>
                         </div>
                     </div>`;
             });
@@ -380,7 +494,7 @@
         function updateCartUI() {
             const box = document.getElementById('fe-cart-items'); box.innerHTML = '';
             if(currentCart.length === 0) {
-                box.innerHTML = `<div class="text-center py-6 text-xs text-gray-400">購物車空空如也</div>`;
+                box.innerHTML = `<div class="text-center py-6 text-xs text-gray-400 font-light">尚未選擇任何美味菜色</div>`;
                 document.getElementById('fe-subtotal').innerText = 'NT$ 0'; document.getElementById('fe-svc').innerText = 'NT$ 0'; document.getElementById('fe-total').innerText = 'NT$ 0'; return;
             }
             let subtotal = 0;
@@ -388,29 +502,29 @@
                 subtotal += c.price * c.qty;
                 box.innerHTML += `
                     <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded-lg border border-gray-100">
-                        <div class="flex-1 font-bold text-gray-700">${c.name}</div>
+                        <div class="flex-1 pr-1"><span class="font-bold text-gray-800 text-[11px] block leading-tight">${c.name}</span><span class="text-siamPurple font-medium text-[10px]">NT$ ${c.price}</span></div>
                         <div class="flex items-center space-x-1 bg-white p-0.5 rounded shadow-sm">
-                            <button onclick="changeQty('${c.name}', -1)" class="w-4 h-4 bg-gray-100 text-[10px] flex items-center justify-center rounded">-</button>
-                            <span class="font-bold w-3 text-center">${c.qty}</span>
-                            <button onclick="changeQty('${c.name}', 1)" class="w-4 h-4 bg-gray-100 text-[10px] flex items-center justify-center rounded">+</button>
+                            <button onclick="changeQty('${c.name}', -1)" class="w-4 h-4 bg-gray-100 text-[10px] flex items-center justify-center rounded font-bold">-</button>
+                            <span class="font-bold w-3 text-center text-[11px] text-gray-700">${c.qty}</span>
+                            <button onclick="changeQty('${c.name}', 1)" class="w-4 h-4 bg-gray-100 text-[10px] flex items-center justify-center rounded font-bold">+</button>
                         </div>
                     </div>`;
             });
             const svc = Math.round(subtotal * 0.1);
-            document.getElementById('fe-subtotal').innerText = `NT$ ${subtotal}`;
-            document.getElementById('fe-svc').innerText = `NT$ ${svc}`;
-            document.getElementById('fe-total').innerText = `NT$ ${subtotal + svc}`;
+            document.getElementById('fe-subtotal').innerText = `NT$ ${subtotal.toLocaleString()}`;
+            document.getElementById('fe-svc').innerText = `NT$ ${svc.toLocaleString()}`;
+            document.getElementById('fe-total').innerText = `NT$ ${(subtotal + svc).toLocaleString()}`;
         }
         function submitFinalOrder() {
             if(currentCart.length === 0) return;
-            const total = parseInt(document.getElementById('fe-total').innerText.replace('NT$ ', ''));
+            const total = parseInt(document.getElementById('fe-total').innerText.replace('NT$ ', '').replace(/,/g, ''));
             let db = JSON.parse(localStorage.getItem('SIAM_ORDERS')) || [];
             db.push({ id: Date.now(), type: currentOrderState.type, date: currentOrderState.date, time: currentOrderState.time, name: currentOrderState.name, phone: currentOrderState.phone, items: JSON.parse(JSON.stringify(currentCart)), total: total });
             localStorage.setItem('SIAM_ORDERS', JSON.stringify(db));
-            alert('🎉 預點單發送成功！'); resetWizard();
+            alert('🎉 預點單發送成功！已同步至門市後台。'); resetWizard();
         }
 
-        // --- 后台核心營運與【刪改訂單】演算中心 ---
+        // --- 後台管理及刪改核心代碼 ---
         function doLogin() { switchView('backend-main'); }
         function switchBackendTab(tabId) {
             document.getElementById('back-tab-dashboard').classList.add('hidden'); document.getElementById('back-tab-orders').classList.add('hidden');
@@ -423,7 +537,6 @@
             }
         }
 
-        // 大數據看板即時算屏
         function renderBackendStats() {
             const db = JSON.parse(localStorage.getItem('SIAM_ORDERS')) || [];
             let totalRevenue = 0, dineIn = 0, takeout = 0, map = {};
@@ -431,17 +544,29 @@
                 totalRevenue += o.total; if(o.type === '內用') dineIn++; else takeout++;
                 o.items.forEach(i => { map[i.name] = (map[i.name] || 0) + i.qty; });
             });
+
             document.getElementById('stat-order-count').innerText = `${db.length} 筆`;
             document.getElementById('stat-total-revenue').innerText = `NT$ ${totalRevenue.toLocaleString()}`;
-            document.getElementById('stat-ratio').innerText = `內用 ${dineIn} 筆 ｜ 外帶 ${takeout} 筆`;
+            document.getElementById('stat-ratio').innerText = `內用 ${dineIn} ｜ 外帶 ${takeout}`;
+
+            // 計算分流佔比能量條比例
+            const totalCount = db.length || 1;
+            const dineInPercent = (dineIn / totalCount) * 100;
+            const takeoutPercent = (takeout / totalCount) * 100;
+            document.getElementById('bar-ratio-dinein').style.width = `${dineInPercent}%`;
+            document.getElementById('bar-ratio-takeout').style.width = `${takeoutPercent}%`;
+
             const sorted = Object.keys(map).map(k => ({ name: k, qty: map[k] })).sort((a,b) => b.qty - a.qty);
             const box = document.getElementById('stat-ingredients-box'); box.innerHTML = '';
-            if(sorted.length === 0) { box.innerHTML = `<div class="p-6 text-center text-xs text-gray-400">暫無備料數據</div>`; return; }
+            if(sorted.length === 0) { box.innerHTML = `<div class="p-6 text-center text-xs text-gray-400">暫無廚房備料數據</div>`; return; }
             sorted.forEach((ing, i) => {
                 box.innerHTML += `
-                    <div class="p-3 flex items-center justify-between text-xs">
-                        <div class="flex items-center space-x-3 w-1/3"><span class="font-bold text-gray-700">${ing.name}</span></div>
-                        <div class="flex-1 px-4"><div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-siamGold h-1.5 rounded-full" style="width: ${Math.min(ing.qty * 15, 100)}%"></div></div></div>
+                    <div class="p-3 flex items-center justify-between text-xs hover:bg-gray-50/60 transition">
+                        <div class="flex items-center space-x-3 w-1/3">
+                            <span class="w-5 h-5 rounded bg-slate-100 flex items-center justify-center font-bold text-gray-400 text-[10px]">${i+1}</span>
+                            <span class="font-bold text-gray-700">${ing.name}</span>
+                        </div>
+                        <div class="flex-1 px-4"><div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-siamGold h-1.5 rounded-full transition-all duration-300" style="width: ${Math.min(ing.qty * 15, 100)}%"></div></div></div>
                         <div class="w-16 text-right font-black text-gray-800">${ing.qty} 份</div>
                     </div>`;
             });
@@ -452,124 +577,91 @@
             const tbody = document.getElementById('order-list-tbody'); tbody.innerHTML = '';
             
             db.forEach(o => {
+                const badgeColor = o.type === '內用' ? 'bg-purple-100 text-purple-800' : 'bg-amber-100 text-amber-800';
                 tbody.innerHTML += `
-                    <tr class="text-gray-700 border-b hover:bg-gray-50/50">
-                        <td class="py-3">${o.date} ${o.time} (${o.type})</td>
-                        <td class="font-bold">${o.name}</td>
-                        <td>${o.phone}</td>
-                        <td class="text-gray-400 truncate max-w-xs">${o.items.map(i=>`${i.name}x${i.qty}`).join(', ')}</td>
-                        <td class="text-right font-bold text-siamPurple">NT$ ${o.total.toLocaleString()}</td>
-                        <td class="text-center space-x-1.5">
-                            <button onclick="openEditModal(${o.id})" class="text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 transition font-medium"><i class="fa-solid fa-pen-to-square mr-1"></i>修改</button>
-                            <button onclick="deleteOrder(${o.id})" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded-md border border-red-200 transition font-medium"><i class="fa-solid fa-trash-can mr-1"></i>取消</button>
+                    <tr class="text-gray-700 border-b hover:bg-gray-50/40 text-xs transition">
+                        <td class="py-2.5 font-medium"><span class="px-2 py-0.5 rounded font-bold text-[9px] ${badgeColor} mr-1.5">${o.type}</span>${o.date} ｜ ${o.time}</td>
+                        <td class="font-bold text-gray-900">${o.name}</td>
+                        <td class="text-gray-500">${o.phone}</td>
+                        <td class="text-gray-400 truncate max-w-xs font-light">${o.items.map(i=>`${i.name}x${i.qty}`).join(', ')}</td>
+                        <td class="text-right font-black text-siamPurple">NT$ ${o.total.toLocaleString()}</td>
+                        <td class="text-center space-x-1">
+                            <button onclick="openEditModal(${o.id})" class="text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 transition text-[11px] font-semibold"><i class="fa-solid fa-pen-to-square mr-0.5"></i>修改</button>
+                            <button onclick="deleteOrder(${o.id})" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg border border-red-100 transition text-[11px] font-semibold"><i class="fa-solid fa-trash-can mr-0.5"></i>取消</button>
                         </td>
                     </tr>`;
             });
 
-            // 月曆行事曆聯動同步
             const calBox = document.getElementById('calendar-grid-box'); calBox.innerHTML = '';
-            calBox.innerHTML += `<div class="bg-gray-50/40 min-h-[60px] rounded-xl"></div>`;
+            calBox.innerHTML += `<div class="bg-gray-50/40 min-h-[60px] rounded-xl"></div>`; 
             for(let d=1; d<=30; d++) {
                 const dStr = `2026-06-${d < 10 ? '0'+d : d}`; const match = db.filter(o => o.date === dStr);
-                let badge = ''; match.forEach(o => { badge += `<div class="${o.type==='內用'?'bg-siamPurple':'bg-siamGold'} text-white text-[9px] px-1 py-0.5 rounded truncate mt-0.5">${o.name}</div>`; });
-                calBox.innerHTML += `<div class="bg-gray-50 min-h-[65px] p-1 border rounded-xl flex flex-col justify-between"><span class="text-xs font-bold text-gray-400">${d}</span><div>${badge}</div></div>`;
+                let badge = ''; match.forEach(o => { badge += `<div class="${o.type==='內用'?'bg-siamPurple':'bg-siamGold'} text-white text-[9px] scale-95 px-1 py-0.5 rounded truncate mt-0.5 font-light">${o.name}</div>`; });
+                calBox.innerHTML += `<div class="bg-gray-50 min-h-[65px] p-1 border border-gray-100 rounded-xl flex flex-col justify-between"><span class="text-[10px] font-bold text-gray-400">${d}</span><div class="space-y-px">${badge}</div></div>`;
             }
         }
 
-        // ==========================================
-        // 【核心邏輯：外場彈除／修改訂單引擎】
-        // ==========================================
+        // --- 刪改彈窗精細演算法 ---
         function openEditModal(orderId) {
             const db = JSON.parse(localStorage.getItem('SIAM_ORDERS')) || [];
             const order = db.find(o => o.id === orderId);
             if (!order) return;
-
             editingOrderId = orderId;
-            editingItemsTemp = JSON.parse(JSON.stringify(order.items)); // 複製一份暫存陣列供操作
-
-            document.getElementById('modal-cust-name').innerText = `${order.name} (${order.phone})`;
-            document.getElementById('modal-cust-time').innerText = `${order.date} ${order.time} ｜ [${order.type}]`;
-
+            editingItemsTemp = JSON.parse(JSON.stringify(order.items));
+            document.getElementById('modal-cust-name').innerText = `${order.name} 貴賓 (${order.phone})`;
+            document.getElementById('modal-cust-time').innerText = `${order.date} ｜ 時段：${order.time} ｜ [${order.type}]`;
             renderModalItems();
             document.getElementById('edit-order-modal').classList.remove('hidden');
         }
-
         function renderModalItems() {
-            const container = document.getElementById('modal-items-container');
-            container.innerHTML = '';
-
+            const container = document.getElementById('modal-items-container'); container.innerHTML = '';
             if(editingItemsTemp.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-xs text-gray-400">所有品項皆已被移除</div>`;
-                return;
+                container.innerHTML = `<div class="text-center py-6 text-xs text-gray-400 font-light">所有品項均已撤除</div>`; return;
             }
-
             editingItemsTemp.forEach((item, index) => {
                 container.innerHTML += `
-                    <div class="flex justify-between items-center py-3 text-xs">
-                        <div class="flex-1 pr-2">
-                            <span class="font-bold text-gray-800 block">${item.name}</span>
-                            <span class="text-gray-400 text-[10px]">單價 NT$ ${item.price}</span>
+                    <div class="flex justify-between items-center py-2.5 text-xs">
+                        <div class="flex-1 pr-1"><span class="font-bold text-gray-800 block leading-tight">${item.name}</span><span class="text-gray-400 text-[10px]">單價 NT$ ${item.price}</span></div>
+                        <div class="flex items-center space-x-2 bg-gray-50 p-1 rounded-lg border">
+                            <button onclick="changeModalItemQty(${index}, -1)" class="w-5 h-5 bg-white shadow-sm flex items-center justify-center rounded font-bold text-gray-500">-</button>
+                            <span class="font-black w-3 text-center text-gray-800">${item.qty}</span>
+                            <button onclick="changeModalItemQty(${index}, 1)" class="w-5 h-5 bg-white shadow-sm flex items-center justify-center rounded font-bold text-gray-500">+</button>
                         </div>
-                        <div class="flex items-center space-x-2 bg-gray-50 p-1 rounded-xl border">
-                            <button onclick="changeModalItemQty(${index}, -1)" class="w-5 h-5 bg-white shadow-sm flex items-center justify-center rounded-md font-bold text-gray-500 hover:bg-gray-100">-</button>
-                            <span class="font-black w-4 text-center text-gray-800">${item.qty}</span>
-                            <button onclick="changeModalItemQty(${index}, 1)" class="w-5 h-5 bg-white shadow-sm flex items-center justify-center rounded-md font-bold text-gray-500 hover:bg-gray-100">+</button>
-                        </div>
-                        <button onclick="deleteModalItem(${index})" class="text-red-500 hover:text-red-700 ml-4 pl-1 text-sm" title="移除此菜色"><i class="fa-solid fa-trash-can"></i></button>
+                        <button onclick="deleteModalItem(${index})" class="text-red-500 hover:text-red-700 ml-4 pl-1 transition"><i class="fa-solid fa-trash-can"></i></button>
                     </div>`;
             });
         }
-
         function changeModalItemQty(index, amt) {
             editingItemsTemp[index].qty += amt;
-            if(editingItemsTemp[index].qty <= 0) {
-                editingItemsTemp = editingItemsTemp.filter((_, idx) => idx !== index);
-            }
+            if(editingItemsTemp[index].qty <= 0) editingItemsTemp = editingItemsTemp.filter((_, idx) => idx !== index);
             renderModalItems();
         }
-
         function deleteModalItem(index) {
             editingItemsTemp = editingItemsTemp.filter((_, idx) => idx !== index);
             renderModalItems();
         }
-
         function closeEditModal() {
-            document.getElementById('edit-order-modal').classList.add('hidden');
-            editingOrderId = null; editingItemsTemp = [];
+            document.getElementById('edit-order-modal').classList.add('hidden'); editingOrderId = null; editingItemsTemp = [];
         }
-
-        // 儲存修改：重新計算小計加乘 10% 服務費，重新寫入本地資料庫
         function saveOrderEdits() {
             let db = JSON.parse(localStorage.getItem('SIAM_ORDERS')) || [];
             const index = db.findIndex(o => o.id === editingOrderId);
-            
             if(index !== -1) {
                 if(editingItemsTemp.length === 0) {
-                    // 如果菜色全被外場扣光，直接視同取消訂單
-                    db = db.filter(o => o.id !== editingOrderId);
-                    alert('品項已清空，該筆訂單已自動整筆撤銷！');
+                    db = db.filter(o => o.id !== editingOrderId); alert('由於品項已全數清空，該筆訂單自動整筆撤銷！');
                 } else {
-                    // 重新動態加總計算全新金額
-                    let newSubtotal = 0;
-                    editingItemsTemp.forEach(i => { newSubtotal += (i.price * i.qty); });
-                    const newTotal = newSubtotal + Math.round(newSubtotal * 0.1); // 小計 + 10% 服務費
-
+                    let sub = 0; editingItemsTemp.forEach(i => { sub += (i.price * i.qty); });
                     db[index].items = editingItemsTemp;
-                    db[index].total = newTotal;
+                    db[index].total = sub + Math.round(sub * 0.1);
                     alert('📋 訂單明細數量與服務費已重新計算並完成更新！');
                 }
-                localStorage.setItem('SIAM_ORDERS', JSON.stringify(db));
-                closeEditModal();
-                renderBackendCalendarAndList(); // 重繪看板
+                localStorage.setItem('SIAM_ORDERS', JSON.stringify(db)); closeEditModal(); renderBackendCalendarAndList();
             }
         }
-
-        // 取消整筆訂單
         function deleteOrder(orderId) {
-            if(confirm('🚨 確定要「完全取消並刪除」這筆預點餐訂單嗎？刪除後廚房備料數據將會同步扣除。')) {
+            if(confirm('🚨 確定要「完全取消並刪除」這筆預點餐訂單嗎？\n刪除後廚房備料大數據排行將會同步扣除扣減。')) {
                 let db = JSON.parse(localStorage.getItem('SIAM_ORDERS')) || [];
-                db = db.filter(o => o.id !== orderId);
-                localStorage.setItem('SIAM_ORDERS', JSON.stringify(db));
+                db = db.filter(o => o.id !== orderId); localStorage.setItem('SIAM_ORDERS', JSON.stringify(db));
                 renderBackendCalendarAndList();
             }
         }
