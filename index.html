@@ -421,9 +421,15 @@
             </select>
           </div>
           <div id="admin-sidebar-user" class="mt-2.5 text-[11px] text-slate-400 truncate"></div>
-          <div id="firebase-status-badge" class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-medium text-amber-300 border border-slate-700">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-            本機模式（未連接 Firebase）
+          <div class="mt-2 flex flex-wrap items-center gap-1.5">
+            <div id="firebase-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-medium text-amber-300 border border-slate-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              本機模式（未連接 Firebase）
+            </div>
+            <button type="button" onclick="testFirebaseConnection()"
+              class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold border border-slate-700 transition">
+              測試讀寫
+            </button>
           </div>
         </div>
 
@@ -1374,19 +1380,51 @@ async function cloudSaveOrder(order) {
     return true;
   } catch (e) {
     console.error('Firebase save order error:', e);
-    showToast('雲端同步訂單失敗：' + (e.message || '請確認 Firestore 規則'), 'error');
+    showToast('雲端同步訂單失敗：' + formatFirebaseError(e), 'error');
     return false;
   }
 }
 
+function formatFirebaseError(e) {
+  const code = (e && e.code) ? e.code : '';
+  const msg = (e && e.message) ? e.message : '';
+  if (code === 'permission-denied' || msg.includes('Missing or insufficient permissions')) {
+    return '權限被拒 (permission-denied)：請到 Firebase → Firestore → 規則改為 allow read, write: if true; 並按發布';
+  }
+  if (code === 'resource-exhausted' || msg.includes('Quota exceeded')) {
+    return '今日 Firebase 免費讀寫額度已達上限 (resource-exhausted)，台灣時間下午 4 點會自動重置';
+  }
+  if (msg.includes('exceeds the maximum allowed size') || msg.includes('1048576')) {
+    return '菜單圖片總容量超過 Firebase 單檔 1MB 上限，請改用圖片網址或減少圖片張數';
+  }
+  return (code ? `[${code}] ` : '') + (msg || '連線異常');
+}
+
 async function cloudSaveConfig(docName, payload) {
-  if (!firebaseConnected || !db) return;
+  if (!firebaseConnected || !db) return false;
   try {
     const cleanPayload = JSON.parse(JSON.stringify(payload));
     await db.collection('siammore_config').doc(docName).set({ data: cleanPayload, updatedAt: new Date().toISOString() });
+    return true;
   } catch (e) {
     console.error('Firebase save config error:', e);
-    showToast('雲端同步設定失敗，請確認網路與權限', 'error');
+    showToast('雲端同步失敗：' + formatFirebaseError(e), 'error');
+    return false;
+  }
+}
+
+async function testFirebaseConnection() {
+  if (!firebaseConnected || !db) {
+    showToast('尚未連接 Firebase，請確認 FIREBASE_CONFIG 設定', 'error');
+    return;
+  }
+  try {
+    const ts = new Date().toLocaleTimeString('zh-TW');
+    await db.collection('siammore_config').doc('ping').set({ ts, ok: true });
+    const snap = await db.collection('siammore_orders').get();
+    showToast(`✅ Firebase 雲端讀寫正常！目前雲端共有 ${snap.size} 筆訂單（${ts}）`, 'success');
+  } catch (e) {
+    showToast('❌ 雲端測試失敗：' + formatFirebaseError(e), 'error');
   }
 }
 
@@ -3965,7 +4003,7 @@ function handleImageFileUpload(event, prefix) {
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
-      const maxDim = 640;
+      const maxDim = 360;
       const longest = Math.max(img.width, img.height);
       const scale = longest > maxDim ? maxDim / longest : 1;
       const canvas = document.createElement('canvas');
@@ -3973,7 +4011,7 @@ function handleImageFileUpload(event, prefix) {
       canvas.height = Math.round(img.height * scale);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const compressed = canvas.toDataURL('image/jpeg', 0.78);
+      const compressed = canvas.toDataURL('image/jpeg', 0.65);
       if (prefix === 'dish') state.dishFormImage = compressed;
       else state.setFormImage = compressed;
       document.getElementById(`${prefix}-form-img-url`).value = '';
