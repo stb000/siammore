@@ -283,9 +283,9 @@
             <div id="cart-upsell-box" class="p-3 rounded-xl bg-amber-50 border border-amber-200/80 mb-4 flex items-center justify-between gap-2">
               <div class="min-w-0">
                 <div class="text-[11px] font-bold text-amber-800 uppercase">重點加購推薦</div>
-                <div id="cart-upsell-info" class="text-sm font-semibold text-stone-800 truncate">厚泰奶布丁 <span class="text-amber-700">NT$ 100</span></div>
+                <div id="cart-upsell-info" class="text-sm font-semibold text-stone-800 truncate">摩摩喳喳 <span class="text-amber-700">NT$ 100</span></div>
               </div>
-              <button type="button" onclick="quickAddRecommended()"
+              <button id="btn-upsell-add" type="button" onclick="quickAddRecommended()"
                 class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition shrink-0">
                 + 加購
               </button>
@@ -1453,7 +1453,7 @@ function initFirebaseSync() {
 
     configRef.doc('upsell').onSnapshot((doc) => {
       if (doc.exists && doc.data() && doc.data().data !== undefined) {
-        state.upsellDishName = doc.data().data;
+        state.upsellDishName = normalizeDishNameSimple(doc.data().data);
         safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
       cloudSaveConfig('upsell', state.upsellDishName);
         renderUpsellBox();
@@ -2632,28 +2632,51 @@ function addItemToCart(dish, spice) {
   showToast(`已加入「${dish.name}」`);
 }
 
+function normalizeDishNameSimple(n) {
+  if (!n) return '';
+  return String(n)
+    .replace(/^摩摩喳喳\(.*\)$/, '摩摩喳喳')
+    .replace(/^椰香黑糯米\(.*\)$/, '椰香黑糯米')
+    .replace(/^泰式奶茶\(.*\)$/, '泰式奶茶');
+}
+
 function renderUpsellBox() {
   const box = document.getElementById('cart-upsell-box');
   const info = document.getElementById('cart-upsell-info');
+  const btn = document.getElementById('btn-upsell-add');
   if (!box || !info) return;
-  if (!state.upsellDishName) {
+  const targetName = normalizeDishNameSimple(state.upsellDishName);
+  if (!targetName) {
     box.classList.add('hidden');
     return;
   }
-  const dish = state.menu.find(d => d.name === state.upsellDishName);
+  const dish = state.menu.find(d => d.name === targetName && isItemAvailableFor(d, state.customerDraft.diningType));
   if (!dish) {
     box.classList.add('hidden');
     return;
   }
   box.classList.remove('hidden');
   info.innerHTML = `${tDish(dish.name)} <span class="text-amber-700">NT$ ${dish.price}</span>`;
+  if (btn) {
+    const hasSet = state.cart.some(it => it.isSet);
+    btn.className = hasSet
+      ? 'px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition shrink-0'
+      : 'px-3 py-1.5 rounded-lg bg-stone-200 text-stone-500 text-xs font-semibold transition shrink-0';
+    btn.textContent = hasSet ? (state.lang === 'en' ? '+ Add' : '+ 加購') : '先選套餐';
+  }
 }
 
 function quickAddRecommended() {
-  if (!state.cart.some(it => it.isSet)) { showToast('春節期間請先點選任一春節多人套餐，方能單點加點', 'error'); return; }
-  const dish = state.menu.find(d => d.name === state.upsellDishName) || state.menu.find(d => d.name === '厚泰奶布丁') || {
-    id: 'dish_rec_pudding', name: '厚泰奶布丁', category: '有點甜', price: 100
-  };
+  if (!state.cart.some(it => it.isSet)) {
+    showToast('春節期間請先點選任一春節多人套餐，方能單點加點', 'error');
+    return;
+  }
+  const targetName = normalizeDishNameSimple(state.upsellDishName);
+  const dish = state.menu.find(d => d.name === targetName && isItemAvailableFor(d, state.customerDraft.diningType));
+  if (!dish) {
+    showToast('此推薦品項目前暫無供應', 'info');
+    return;
+  }
   addItemToCart(dish, '辣度固定');
 }
 
@@ -2720,7 +2743,12 @@ function updateCartUI() {
       minSpendBox.classList.add('hidden');
     }
   }
-  document.getElementById('btn-submit-order').disabled = state.cart.length === 0 || !state.cart.some(it => it.isSet) || !minSpendOk;
+  const submitBtn = document.getElementById('btn-submit-order');
+  const canSubmitNow = state.cart.length > 0 && state.cart.some(it => it.isSet) && minSpendOk;
+  submitBtn.disabled = state.cart.length === 0;
+  submitBtn.className = canSubmitNow
+    ? 'w-full py-3.5 rounded-xl brand-purple brand-purple-hover text-white font-semibold shadow-sm transition'
+    : 'w-full py-3.5 rounded-xl bg-stone-300 text-stone-600 font-semibold transition';
 }
 
 function openConfirmOrderModal() {
@@ -2773,9 +2801,16 @@ function openConfirmOrderModal() {
   lucide.createIcons();
 }
 
-function confirmFinalSubmitOrder() {
-  closeModal('modal-confirm-order');
-  submitCustomerOrder();
+let isSubmittingOrder = false;
+async function confirmFinalSubmitOrder() {
+  if (isSubmittingOrder) return;
+  isSubmittingOrder = true;
+  try {
+    closeModal('modal-confirm-order');
+    await submitCustomerOrder();
+  } finally {
+    isSubmittingOrder = false;
+  }
 }
 
 async function submitCustomerOrder() {
@@ -2806,7 +2841,7 @@ async function submitCustomerOrder() {
 
   state.orders.unshift(newOrder);
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
-  await cloudSaveOrder(newOrder);
+  await Promise.race([cloudSaveOrder(newOrder), new Promise(resolve => setTimeout(resolve, 1200))]);
   if (state.adminLoggedIn) refreshAdminViews();
 
   document.getElementById('order-confirm-card').innerHTML = `
