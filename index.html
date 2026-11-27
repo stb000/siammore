@@ -1367,19 +1367,23 @@ function updateFirebaseStatusBadge(connected, label) {
 }
 
 async function cloudSaveOrder(order) {
-  if (!firebaseConnected || !db) return;
+  if (!firebaseConnected || !db) return false;
   try {
-    await db.collection('siammore_orders').doc(order.id).set(order);
+    const cleanOrder = JSON.parse(JSON.stringify(order));
+    await db.collection('siammore_orders').doc(cleanOrder.id).set(cleanOrder);
+    return true;
   } catch (e) {
     console.error('Firebase save order error:', e);
-    showToast('雲端同步訂單失敗，請確認 Firestore 規則設定', 'error');
+    showToast('雲端同步訂單失敗：' + (e.message || '請確認 Firestore 規則'), 'error');
+    return false;
   }
 }
 
 async function cloudSaveConfig(docName, payload) {
   if (!firebaseConnected || !db) return;
   try {
-    await db.collection('siammore_config').doc(docName).set({ data: payload, updatedAt: new Date().toISOString() });
+    const cleanPayload = JSON.parse(JSON.stringify(payload));
+    await db.collection('siammore_config').doc(docName).set({ data: cleanPayload, updatedAt: new Date().toISOString() });
   } catch (e) {
     console.error('Firebase save config error:', e);
     showToast('雲端同步設定失敗，請確認網路與權限', 'error');
@@ -2773,7 +2777,7 @@ function confirmFinalSubmitOrder() {
   submitCustomerOrder();
 }
 
-function submitCustomerOrder() {
+async function submitCustomerOrder() {
   if (state.cart.length === 0) return;
   if (!state.cart.some(it => it.isSet)) { showToast('春節期間需點選任一春節多人套餐，方能送出訂單', 'error'); return; }
   const d = state.customerDraft;
@@ -2801,7 +2805,7 @@ function submitCustomerOrder() {
 
   state.orders.unshift(newOrder);
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
-  cloudSaveOrder(newOrder);
+  await cloudSaveOrder(newOrder);
   if (state.adminLoggedIn) refreshAdminViews();
 
   document.getElementById('order-confirm-card').innerHTML = `
