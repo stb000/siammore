@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SIAM MORE 饗泰多 — 顧客預點餐與門市智慧後台系統</title>
+  <title>SIAM MORE 饗泰多 — 智慧預點餐系統</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
@@ -301,7 +301,7 @@
               </div>
             </div>
 
-            <button id="btn-submit-order" type="button" onclick="submitCustomerOrder()"
+            <button id="btn-submit-order" type="button" onclick="openConfirmOrderModal()"
               class="w-full py-3.5 rounded-xl brand-purple brand-purple-hover text-white font-semibold shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
               確認送出預點
             </button>
@@ -945,6 +945,32 @@
     </div>
   </div>
 
+  <!-- Customer Pre-Order Confirmation Review Modal -->
+  <div id="modal-confirm-order" class="hidden fixed inset-0 z-50 bg-black/55 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl fade-in max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-200 mb-4">
+        <h3 class="text-lg font-bold text-violet-950 flex items-center gap-2">
+          <i data-lucide="clipboard-check" class="w-5 h-5 text-amber-600"></i>
+          請確認您的預點明細
+        </h3>
+        <button type="button" onclick="closeModal('modal-confirm-order')" class="text-stone-400 hover:text-stone-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="confirm-order-modal-body" class="flex-1 overflow-y-auto space-y-3 text-sm pr-1"></div>
+      <div class="pt-4 mt-4 border-t border-stone-200 flex gap-3">
+        <button type="button" onclick="closeModal('modal-confirm-order')"
+          class="flex-1 py-3 rounded-xl border border-stone-300 text-stone-700 font-semibold text-sm hover:bg-stone-50 transition">
+          返回上一步
+        </button>
+        <button type="button" onclick="confirmFinalSubmitOrder()"
+          class="flex-1 py-3 rounded-xl brand-purple brand-purple-hover text-white font-semibold text-sm shadow transition">
+          確認送出
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Customer Order Lookup Modal -->
   <div id="modal-order-lookup" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl fade-in max-h-[85vh] flex flex-col">
@@ -1025,9 +1051,15 @@
             <input id="create-order-phone" type="tel" placeholder="輸入行動電話" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
           </div>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">備註（選填）</label>
-          <input id="create-order-note" type="text" placeholder="如：現場電話訂餐、過敏備註" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="create-order-table" class="block text-xs font-bold text-slate-500 mb-1">預排桌號（選填）</label>
+            <input id="create-order-table" type="text" placeholder="例：A1、B3" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">備註（選填）</label>
+            <input id="create-order-note" type="text" placeholder="如：現場電話訂餐" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
@@ -1086,14 +1118,21 @@
             <select id="edit-order-slot" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm"></select>
           </div>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">訂單狀態</label>
-          <select id="edit-order-status" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm">
-            <option value="待確認">待確認</option>
-            <option value="備餐中">備餐中</option>
-            <option value="已完成">已完成</option>
-            <option value="已取消">已取消</option>
-          </select>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">訂單狀態</label>
+            <select id="edit-order-status" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="待確認">待確認</option>
+              <option value="備餐中">備餐中</option>
+              <option value="已完成">已完成</option>
+              <option value="已取消">已取消</option>
+            </select>
+          </div>
+          <div>
+            <label for="edit-order-table" class="block text-xs font-bold text-slate-500 mb-1">預排桌號</label>
+            <input id="edit-order-table" type="text" placeholder="例：A1、B3、包廂1"
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-violet-600 outline-none" />
+          </div>
         </div>
 
         <div>
@@ -1481,7 +1520,7 @@ function createSeedOrders() {
   const specs = [
     {
       id: 'SM27020501', store: '饗泰多松高店', diningType: '內用', date: '2027-02-05', timeSlot: '11:00~13:00',
-      customerName: '邱安琪', phone: '0911223344', adults: 4, children: 0, status: '已完成', note: '',
+      customerName: '邱安琪', phone: '0911223344', adults: 4, children: 0, tableNumber: 'A1', status: '已完成', note: '',
       items: [
         {
           name: '春節四人套餐（4人）', category: '春節多人套餐', price: 3520, qty: 1, isSet: true,
@@ -1501,7 +1540,7 @@ function createSeedOrders() {
     },
     {
       id: 'SM27020601', store: '饗泰多八德店', diningType: '內用', date: '2027-02-06', timeSlot: '17:00~19:00',
-      customerName: '陳柏宇', phone: '0977334455', adults: 6, children: 0, status: '待確認', note: '',
+      customerName: '陳柏宇', phone: '0977334455', adults: 6, children: 0, tableNumber: 'B2', status: '待確認', note: '',
       items: [
         {
           name: '春節六人套餐（6人）', category: '春節多人套餐', price: 5280, qty: 1, isSet: true,
@@ -2255,7 +2294,7 @@ function renderSetConfigBody() {
     html += `
       <div class="border border-stone-200 rounded-xl p-3.5">
         <div class="flex items-center justify-between mb-2.5">
-          <span class="font-bold text-sm text-violet-950">${g.title}（請選 ${requiredCount} 份）</span>
+          <span class="font-bold text-sm text-violet-950">${g.title}（請選 ${requiredCount} 份${(g.key === 'drink' || g.key === 'dessert') ? ' · 可複選' : ' · 不可重複'}）</span>
           <span class="text-xs font-bold px-2 py-0.5 rounded-full ${done ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
             已選 ${pickedTotal} / ${requiredCount}
           </span>
@@ -2330,8 +2369,13 @@ function adjustSetOption(groupKey, optName, delta) {
   const cfg = state.pendingSetConfig;
   const g = cfg.setObj.groups.find(x => x.key === groupKey);
   if (!g) return;
+  const allowRepeat = (groupKey === 'drink' || groupKey === 'dessert');
   const curTotal = Object.values(cfg.selections[groupKey]).reduce((a, b) => a + b, 0);
   const curVal = cfg.selections[groupKey][optName] || 0;
+  if (delta > 0 && !allowRepeat && curVal >= 1) {
+    showToast(`菜色「${optName}」不可複數選取，請選擇其他菜色`, 'info');
+    return;
+  }
   if (delta > 0 && curTotal >= g.pickCount) {
     showToast(`${g.title}最多選擇 ${g.pickCount} 份`, 'info');
     return;
@@ -2522,6 +2566,61 @@ function updateCartUI() {
     }
   }
   document.getElementById('btn-submit-order').disabled = state.cart.length === 0 || !state.cart.some(it => it.isSet) || !minSpendOk;
+}
+
+function openConfirmOrderModal() {
+  if (state.cart.length === 0) return;
+  if (!state.cart.some(it => it.isSet)) {
+    showToast('春節期間需點選任一春節多人套餐，方能送出訂單', 'error');
+    return;
+  }
+  const d = state.customerDraft;
+  const totals = buildOrderTotals(state.cart, d.diningType);
+  if (d.diningType === '內用') {
+    const guests = (d.adults || 1) + (d.children || 0);
+    if (totals.subtotal < guests * 600) {
+      showToast(`春節內用每人低消 NT$ 600，尚差 NT$ ${(guests * 600 - totals.subtotal).toLocaleString()}`, 'error');
+      return;
+    }
+  }
+
+  const body = document.getElementById('confirm-order-modal-body');
+  body.innerHTML = `
+    <div class="bg-stone-50 rounded-xl p-3.5 border border-stone-200 space-y-1.5 text-xs sm:text-sm">
+      <div class="flex justify-between"><span class="text-stone-500">分店</span><span class="font-bold text-violet-950">${d.store}</span></div>
+      <div class="flex justify-between"><span class="text-stone-500">用餐方式</span><span class="font-semibold">${d.diningType}</span></div>
+      <div class="flex justify-between"><span class="text-stone-500">日期與時段</span><span class="font-semibold">${d.date} ${d.timeSlot}</span></div>
+      <div class="flex justify-between"><span class="text-stone-500">訂位姓名 / 電話</span><span class="font-semibold">${d.name}（${d.phone}）</span></div>
+      ${d.diningType === '內用' ? `<div class="flex justify-between"><span class="text-stone-500">用餐人數</span><span class="font-semibold">大人 ${d.adults || 1} 位 / 小孩 ${d.children || 0} 位</span></div>` : ''}
+    </div>
+    <div class="space-y-2">
+      <div class="text-xs font-bold text-stone-500 uppercase">預點菜色明細</div>
+      ${state.cart.map(it => `
+        <div class="bg-white rounded-xl p-3 border border-stone-200 text-xs">
+          <div class="flex justify-between font-bold text-stone-800">
+            <span>${it.name} × ${it.qty}</span>
+            <span>NT$ ${(it.price * it.qty).toLocaleString()}</span>
+          </div>
+          ${it.isSet && Array.isArray(it.subItems) ? `<div class="text-[11px] text-stone-500 mt-1 leading-relaxed">內容：${it.subItems.map(s => `${s.name}×${s.qty}`).join('、')}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    <div class="bg-violet-50/60 rounded-xl p-3.5 border border-violet-200 space-y-1 text-xs sm:text-sm">
+      <div class="flex justify-between text-stone-600"><span>小計</span><span>NT$ ${totals.subtotal.toLocaleString()}</span></div>
+      ${totals.serviceFee > 0 ? `<div class="flex justify-between text-stone-600"><span>服務費 (10%)</span><span>NT$ ${totals.serviceFee.toLocaleString()}</span></div>` : ''}
+      <div class="flex justify-between font-bold text-base text-violet-950 pt-1 border-t border-violet-200/70">
+        <span>應付總額</span>
+        <span>NT$ ${totals.total.toLocaleString()}</span>
+      </div>
+    </div>
+  `;
+  document.getElementById('modal-confirm-order').classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function confirmFinalSubmitOrder() {
+  closeModal('modal-confirm-order');
+  submitCustomerOrder();
 }
 
 function submitCustomerOrder() {
@@ -3200,34 +3299,73 @@ function renderFullRanking(orders) {
 
 function exportStatsCSV() {
   const orders = getFilteredOrders();
-  const rows = [['菜色名稱', '分類', '總份數', '午餐合計', '晚餐合計', ...TIME_SLOTS, '總金額']];
+  const usedSlots = TIME_SLOTS.filter(s => orders.some(o => o.timeSlot === s) || DINEIN_LUNCH_SLOTS.includes(s) || DINEIN_DINNER_SLOTS.includes(s));
+
+  // Section 1: Dish x Time Slot Summary (with Table Numbers per slot)
+  const rows = [
+    ['【一、菜色分時段統計與出餐桌號總表】'],
+    ['菜色名稱', '分類', '總份數', '午餐合計', '晚餐合計', ...usedSlots.map(s => `${s} (份數 / 出餐桌號)`), '總金額']
+  ];
   const map = {};
   orders.forEach(o => {
+    const tblLabel = o.diningType === '外帶' ? '外帶' : (o.tableNumber ? o.tableNumber : '未排桌');
     expandOrderDishItems(o).forEach(it => {
       if (!map[it.name]) {
-        map[it.name] = { name: it.name, category: it.category, total: 0, lunch: 0, dinner: 0, amount: 0, slots: Object.fromEntries(TIME_SLOTS.map(s => [s, 0])) };
+        map[it.name] = {
+          name: it.name, category: it.category, total: 0, lunch: 0, dinner: 0, amount: 0,
+          slots: Object.fromEntries(TIME_SLOTS.map(s => [s, { qty: 0, tables: [] }]))
+        };
       }
       const m = map[it.name];
       m.total += it.qty;
       m.amount += it.price * it.qty;
       if (o.mealPeriod === '午餐') m.lunch += it.qty; else m.dinner += it.qty;
-      if (m.slots[o.timeSlot] !== undefined) m.slots[o.timeSlot] += it.qty;
+      if (m.slots[o.timeSlot] !== undefined) {
+        m.slots[o.timeSlot].qty += it.qty;
+        m.slots[o.timeSlot].tables.push(`${tblLabel}×${it.qty}`);
+      }
     });
   });
 
   Object.values(map).sort((a, b) => b.total - a.total).forEach(r => {
-    rows.push([r.name, r.category, r.total, r.lunch, r.dinner, ...TIME_SLOTS.map(s => r.slots[s]), r.amount]);
+    const slotCells = usedSlots.map(s => {
+      const cell = r.slots[s];
+      return cell.qty > 0 ? `${cell.qty}份 [${cell.tables.join('、')}]` : '0';
+    });
+    rows.push([r.name, r.category, r.total, r.lunch, r.dinner, ...slotCells, r.amount]);
   });
+
+  // Section 2: By Time Slot -> Dish -> All Table Numbers
+  rows.push([]);
+  rows.push(['【二、各時段餐點全數出餐桌號明細】']);
+  rows.push(['日期', '時段', '菜色名稱', '總份數', '全數出餐桌號']);
+  const slotDishMap = {};
+  orders.forEach(o => {
+    const tblLabel = o.diningType === '外帶' ? '外帶' : (o.tableNumber ? o.tableNumber : '未排桌');
+    expandOrderDishItems(o).forEach(it => {
+      const key = `${o.date}|${o.timeSlot}|${it.name}`;
+      if (!slotDishMap[key]) {
+        slotDishMap[key] = { date: o.date, timeSlot: o.timeSlot, name: it.name, qty: 0, tables: [] };
+      }
+      slotDishMap[key].qty += it.qty;
+      slotDishMap[key].tables.push(`${tblLabel}(${it.qty}份)`);
+    });
+  });
+  Object.values(slotDishMap)
+    .sort((a, b) => (a.date + a.timeSlot + a.name).localeCompare(b.date + b.timeSlot + b.name))
+    .forEach(item => {
+      rows.push([item.date, item.timeSlot, item.name, item.qty, item.tables.join('、')]);
+    });
 
   const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `SIAM_MORE_菜色分時段報表_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `SIAM_MORE_菜色分時段與出餐桌號報表_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('已匯出菜色分時段 CSV 報表');
+  showToast('已匯出含出餐桌號之 Excel (CSV) 報表');
 }
 
 // ==================== ADMIN ORDERS MONITOR ====================
@@ -3287,8 +3425,9 @@ function renderAdminOrders() {
       <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-700">
         ${o.diningType === '內用' ? `大人 ${o.adults || 2} / 小孩 ${o.children || 0}` : '<span class="text-slate-400">—</span>'}
       </td>
-      <td class="px-4 py-3">
+      <td class="px-4 py-3 whitespace-nowrap">
         <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${o.diningType === '內用' ? 'bg-violet-100 text-violet-900' : 'bg-amber-100 text-amber-800'}">${o.diningType}</span>
+        ${o.tableNumber ? `<div class="mt-1 text-[11px] font-bold text-emerald-700">桌號：${o.tableNumber}</div>` : ''}
       </td>
       <td class="px-4 py-3">
         <div class="font-semibold text-slate-800">${o.customerName}</div>
@@ -3371,6 +3510,7 @@ function openCreateOrderModal() {
   document.getElementById('create-order-name').value = '';
   document.getElementById('create-order-phone').value = '';
   document.getElementById('create-order-note').value = '';
+  document.getElementById('create-order-table').value = '';
   onCreateOrderDiningChange();
 
   const dishSel = document.getElementById('create-order-dish-select');
@@ -3448,6 +3588,7 @@ function saveCreatedOrder() {
   const timeSlot = document.getElementById('create-order-slot').value;
   const status = document.getElementById('create-order-status').value;
   const note = document.getElementById('create-order-note').value.trim();
+  const tableNumber = document.getElementById('create-order-table').value.trim();
   const totals = buildOrderTotals(creatingOrderItems, diningType);
 
   const newOrder = {
@@ -3459,6 +3600,7 @@ function saveCreatedOrder() {
     mealPeriod: LUNCH_SLOTS.includes(timeSlot) ? '午餐' : '晚餐',
     customerName: name,
     phone,
+    tableNumber,
     note,
     status,
     createdAt: new Date().toISOString(),
@@ -3513,6 +3655,7 @@ function openEditOrderModal(id) {
   slotSel.innerHTML = TIME_SLOTS.map(s => `<option value="${s}">${s}</option>`).join('');
   slotSel.value = o.timeSlot;
   document.getElementById('edit-order-status').value = o.status;
+  document.getElementById('edit-order-table').value = o.tableNumber || '';
 
   const addSel = document.getElementById('edit-order-add-select');
   addSel.innerHTML = state.menu.map(d => `<option value="${d.id}">${d.name} (NT$ ${d.price})</option>`).join('');
@@ -3577,6 +3720,7 @@ function saveEditedOrder() {
   d.timeSlot = document.getElementById('edit-order-slot').value;
   d.mealPeriod = LUNCH_SLOTS.includes(d.timeSlot) ? '午餐' : '晚餐';
   d.status = document.getElementById('edit-order-status').value;
+  d.tableNumber = document.getElementById('edit-order-table').value.trim();
   const totals = buildOrderTotals(d.items, d.diningType);
   state.orders[idx] = { ...d, ...totals };
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
