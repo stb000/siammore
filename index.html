@@ -186,9 +186,19 @@
               class="w-full px-4 py-3 rounded-xl border border-stone-300 focus:ring-2 focus:ring-violet-600 outline-none" />
           </div>
           <div>
-            <label for="cust-note" class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">用餐備註 NOTE（選填）</label>
-            <input id="cust-note" type="text" placeholder="如：需兒童椅、過敏食材或慶生需求"
-              class="w-full px-4 py-3 rounded-xl border border-stone-300 focus:ring-2 focus:ring-violet-600 outline-none" />
+            <label class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">用餐人數 GUESTS（大人 / 小孩）</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="cust-adults" class="block text-[11px] text-stone-500 mb-1">大人人數</label>
+                <input id="cust-adults" type="number" min="1" value="2"
+                  class="w-full px-4 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-violet-600 outline-none font-semibold" />
+              </div>
+              <div>
+                <label for="cust-children" class="block text-[11px] text-stone-500 mb-1">小孩人數</label>
+                <input id="cust-children" type="number" min="0" value="0"
+                  class="w-full px-4 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-violet-600 outline-none font-semibold" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -242,14 +252,14 @@
             </div>
 
             <div id="cart-items-list" class="space-y-3 max-h-72 overflow-y-auto pr-1 mb-4">
-              <p class="text-sm text-stone-400 text-center py-6">尚未選擇任何美味菜色</p>
+              <p class="text-sm text-stone-400 text-center py-6">${state.lang === "en" ? "No dishes selected yet" : "尚未選擇任何美味菜色"}</p>
             </div>
 
-            <!-- Upsell Recommendation -->
-            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200/80 mb-4 flex items-center justify-between gap-2">
-              <div>
+            <!-- Upsell Recommendation (Configured in Admin) -->
+            <div id="cart-upsell-box" class="p-3 rounded-xl bg-amber-50 border border-amber-200/80 mb-4 flex items-center justify-between gap-2">
+              <div class="min-w-0">
                 <div class="text-[11px] font-bold text-amber-800 uppercase">重點加購推薦</div>
-                <div class="text-sm font-semibold text-stone-800">厚泰奶布丁 <span class="text-amber-700">NT$ 100</span></div>
+                <div id="cart-upsell-info" class="text-sm font-semibold text-stone-800 truncate">厚泰奶布丁 <span class="text-amber-700">NT$ 100</span></div>
               </div>
               <button type="button" onclick="quickAddRecommended()"
                 class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition shrink-0">
@@ -939,12 +949,22 @@
           <label class="block text-xs font-bold text-slate-500 mb-1">備註（選填）</label>
           <input id="create-order-note" type="text" placeholder="如：現場電話訂餐、過敏備註" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
         </div>
-        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <div class="text-xs font-bold text-slate-600 mb-2">加入菜色</div>
-          <div class="flex gap-2">
-            <select id="create-order-dish-select" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"></select>
-            <button type="button" onclick="addDishToCreatingOrder()"
-              class="px-3.5 py-2 rounded-xl bg-violet-700 hover:bg-violet-800 text-white text-xs font-semibold">加入</button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-600 mb-2">加入單點菜色</div>
+            <div class="flex gap-2">
+              <select id="create-order-dish-select" class="flex-1 min-w-0 px-2.5 py-2 rounded-xl border border-slate-300 text-xs bg-white"></select>
+              <button type="button" onclick="addDishToCreatingOrder()"
+                class="px-3 py-2 rounded-xl bg-violet-700 hover:bg-violet-800 text-white text-xs font-semibold shrink-0">加入</button>
+            </div>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200">
+            <div class="text-xs font-bold text-amber-900 mb-2">加入套餐（含選菜）</div>
+            <div class="flex gap-2">
+              <select id="create-order-set-select" class="flex-1 min-w-0 px-2.5 py-2 rounded-xl border border-amber-300 text-xs bg-white"></select>
+              <button type="button" onclick="openSetConfigForAdminCreate()"
+                class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shrink-0">選菜加入</button>
+            </div>
           </div>
         </div>
         <div id="create-order-items" class="space-y-2"></div>
@@ -1175,6 +1195,7 @@ const STORAGE_KEYS = {
   ORDERS: 'siammore_orders_v1',
   MENU: 'siammore_menu_v1',
   SETS: 'siammore_sets_v1',
+  UPSELL: 'siammore_upsell_v1',
   AUTH: 'siammore_auth_v1'
 };
 
@@ -1647,6 +1668,8 @@ let state = {
     timeSlot: '11:00~13:00',
     name: '',
     phone: '',
+    adults: 2,
+    children: 0,
     note: ''
   },
   activeCategory: '饗泰多TOP10',
@@ -1658,6 +1681,8 @@ let state = {
   editingSetId: null,
   adminMenuSubtab: 'dishes',
   pendingSetConfig: null,
+  setConfigTarget: 'customer',
+  upsellDishName: '厚泰奶布丁',
   dishFormImage: '',
   setFormImage: '',
   orders: [],
@@ -1690,6 +1715,7 @@ function isItemAvailableFor(item, diningType) {
 function loadInitialData() {
   state.menu = normalizeAvailability(safeGet(STORAGE_KEYS.MENU, null) || createSeedMenu());
   state.sets = normalizeAvailability(safeGet(STORAGE_KEYS.SETS, null) || createSeedSets());
+  state.upsellDishName = safeGet(STORAGE_KEYS.UPSELL, '厚泰奶布丁');
   state.orders = safeGet(STORAGE_KEYS.ORDERS, null) || createSeedOrders();
   state.auth = safeGet(STORAGE_KEYS.AUTH, null) || { ...DEFAULT_AUTH };
   safeSet(STORAGE_KEYS.MENU, state.menu);
@@ -1786,10 +1812,184 @@ function onAdminStoreSelectChange() {
   refreshAdminViews();
 }
 
+
+// ==================== BILINGUAL (ZH / EN) SUPPORT ====================
+const EN_CAT_MAP = {
+  '套餐組合': 'Set Meals',
+  '饗泰多TOP10': 'Top 10 Favorites',
+  '夏季新菜': 'Seasonal Specials',
+  '開胃涼拌': 'Salads & Starters',
+  '牛香四溢': 'Beef Dishes',
+  '厚實好豬': 'Pork Dishes',
+  '鮮嫩多雞': 'Chicken Dishes',
+  '大口吃海鮮': 'Seafood',
+  '下飯豆腐蛋': 'Tofu & Eggs',
+  '一點都不青菜': 'Vegetables',
+  '吃飽來點': 'Rice & Noodles',
+  '暖胃好湯': 'Soups',
+  '有點甜': 'Desserts',
+  '來杯泰飲': 'Drinks',
+  '來點蔬食': 'Vegetarian'
+};
+
+const EN_DISH_MAP = {
+  '冠軍月亮蝦餅': 'Champion Prawn Cake',
+  '黃咖哩軟殼蟹': 'Yellow Curry Softshell Crab',
+  '清香檸檬魚': 'Steamed Sea Bass with Lime & Chili',
+  '香煎瀑布牛涼拌': 'Pan-fried Beef Salad',
+  '酸辣海鮮涼拌': 'Mixed Seafood Salad',
+  '咔滋椒麻雞': 'Crispy Chicken with Spicy Pepper Sauce',
+  '冬蔭海鮮湯': 'Tom Yum Seafood Soup',
+  '厚煎海鮮烘蛋': 'Pan-fried Seafood Omelette',
+  '椰香綠咖哩雞': 'Green Curry Chicken',
+  '醬烤沙嗲雞': 'Grilled Chicken with Satay Sauce',
+  '魚鬆西瓜涼拌': 'Watermelon Salad with Crispy Fish Floss',
+  '楓糖炙烤子排': 'Glazed Grilled Pork Ribs',
+  '帕能咖哩雞': 'Panang Curry Chicken',
+  '金沙滑蛋高麗菜': 'Cabbage with Salted Egg & Scrambled Egg',
+  '蒜酥松坂蝦醬拌飯': 'Shrimp Paste Rice with Crispy Garlic & Pork Neck',
+  '青檸酸辣海鮮湯': 'Lime Spicy Seafood Soup',
+  '椰奶菇菇雞湯': 'Thai Coconut Chicken & Mushroom Soup',
+  '荔枝冰茶啵啵': 'Lychee Iced Tea with Boba',
+  '椰夏薄荷泡泡': 'Coconut Mint Sparkler',
+  '雙醬金磚吐司': 'Thai Toast with Dual Sauce',
+  '酥烤泰香雞(預訂菜)': 'Isaan-style Roast Chicken (Pre-order)',
+  '現搗青木瓜涼拌': 'Green Papaya Salad with Salted Egg',
+  '泰式手撕雞涼拌': 'Thai Shredded Chicken Salad',
+  '蒜蝦拌花椰(小菜①)': 'Garlic Broccoli with Shrimp Sauce',
+  '泰味雲耳(小菜②)': 'Thai Black Fungus Salad',
+  '酸辣蒜黃瓜(小菜③)': 'Sweet Chili Pickled Cucumbers',
+  '泰味三拼(小菜3款)': 'Thai Appetizer Trio',
+  '東北淚之虎': 'Crying Tiger Grilled Beef',
+  '爆爽辣炒牛': 'Spicy Stir-fried Beef',
+  '蠔氣爆炒牛': 'Stir-fried Beef with Oyster Sauce',
+  '香烤松阪豬': 'Grilled Pork Neck',
+  '扒飯打拋豬': 'Stir-fried Pork with Holy Basil',
+  '泰炸香料豬': 'Crispy Spiced Pork',
+  '黃金咖哩雞': 'Yellow Chicken Curry',
+  '泰式鹹蛋中卷': 'Stir-fried Squid with Salted Egg Yolk',
+  '檸香蒸扁鱈': 'Steamed Halibut with Lime & Chili',
+  '羅望子龍眼蝦球': 'Fried Shrimp Balls with Tamarind & Longan',
+  '濃香紅咖哩魚片': 'Red Curry Fish Fillet',
+  '香料爐烤紙包魚': 'Thai-style Fish En Papillote',
+  '蒜香金沙奶油蟹': 'Crispy Crab with Garlic Salted Egg Sauce',
+  '綠咖哩嫩炸豆腐': 'Green Curry Fried Tofu',
+  '打拋炸蛋': 'Fried Egg with Basil Pork',
+  '泰滑蝦扯蛋': 'Thai-style Shrimp & Scrambled Eggs',
+  '金湯椰香豆腐煲': 'Pumpkin & Tofu Coconut Stew',
+  '泰炒什錦蔬菜': 'Stir-fried Mixed Vegetables',
+  '蝦醬空心菜': 'Water Spinach with Shrimp Paste',
+  '泰北鄉村茄': 'Stir-fried Eggplant with Thai Sauce',
+  '泰香炒野蓮': 'Stir-fried White Water Snowflake Stems',
+  '小象炒飯': 'Pineapple Shrimp Fried Rice',
+  '饗泰多泰炒河粉': 'Shrimp Pad Thai',
+  '鮮蝦寬粉煲/小': 'Steamed Prawn with Glass Noodles (S)',
+  '鮮蝦寬粉煲/大': 'Steamed Prawn with Glass Noodles (L)',
+  '泰國香米飯/人': 'Jasmine Rice (per person)',
+  '蝦仁玉米湯': 'Creamy Corn Shrimp Soup',
+  '香茅椰肉蛤蜊雞湯': 'Lemongrass Coconut Clam & Chicken Soup',
+  '摩摩喳喳': 'Burbur Cha Cha',
+  '椰香黑糯米(冰/熱)': 'Black Glutinous Rice Dessert',
+  '椰子冰淇淋': 'Coconut Ice Cream',
+  '椰香熱帶冰沙': 'Tropical Banana & Mango Smoothie',
+  '厚泰奶布丁': 'Thai Milk Tea Pudding',
+  '泰式奶茶(冰/熱)': 'Thai Milk Tea (Ice / Hot)',
+  '檸檬茶': 'Lemon Tea',
+  '荔枝香芒泡泡': 'Lychee & Mango Soda',
+  '椰子汁': 'Coconut Water',
+  '泰多凍檸綠': 'Iced Green Tea with Lemon',
+  '可樂': 'Coca-Cola',
+  '泰象啤酒': 'Chang Beer',
+  '勝獅啤酒': 'Singha Beer',
+  '清香舒芙茶': 'Fragrant Herbal Tea',
+  '穀香蕎麥茶': 'Roasted Buckwheat Tea',
+  '(素)蛋素青木瓜涼拌': '(Veg) Green Papaya Salad',
+  '(素)蛋素什錦炒飯': '(Veg) Mixed Vegetable Fried Rice',
+  '(素)蛋素炒河粉': '(Veg) Pad Thai',
+  '(素)清炒空心菜': '(Veg) Stir-fried Water Spinach',
+  '(素)清炒什錦蔬菜': '(Veg) Stir-fried Mixed Vegetables',
+  '(素)清炒高麗菜': '(Veg) Stir-fried Cabbage',
+  '(素)鮮菇玉米湯': '(Veg) Mushroom & Corn Soup',
+  '(素)香茅椰肉野菇湯': '(Veg) Lemongrass Coconut Mushroom Soup'
+};
+
+const EN_SET_MAP = {
+  '【二人套餐】': 'Set Menu for 2',
+  '【四人套餐】': 'Set Menu for 4',
+  '【六人套餐】': 'Set Menu for 6',
+  '【八人套餐】': 'Set Menu for 8',
+  '【十人套餐】': 'Set Menu for 10'
+};
+
+function tCat(cat) {
+  return state.lang === 'en' ? (EN_CAT_MAP[cat] || cat) : cat;
+}
+function tDish(name) {
+  return state.lang === 'en' ? (EN_DISH_MAP[name] || name) : name;
+}
+function tSet(name) {
+  return state.lang === 'en' ? (EN_SET_MAP[name] || name) : name;
+}
+
+function applyLanguageToStaticUI() {
+  const en = state.lang === 'en';
+  document.getElementById('lang-label').textContent = en ? 'EN' : '中文';
+
+  const setTxt = (sel, zh, enTxt) => {
+    const el = document.querySelector(sel);
+    if (el) el.textContent = en ? enTxt : zh;
+  };
+
+  setTxt('nav p', '饗泰多泰式風格餐廳 · 智慧預點餐系統', 'SIAM MORE Thai Restaurant · Smart Pre-Order');
+  setTxt('button[onclick="openOrderLookupModal()"]', ' 查詢我的訂單', ' My Orders');
+
+  // Stepper
+  setTxt('#step-ind-1 span:last-child', '用餐方式', 'Dining');
+  setTxt('#step-ind-2 span:last-child', '日期時段', 'Time Slot');
+  setTxt('#step-ind-3 span:last-child', '顧客資料', 'Guest Info');
+  setTxt('#step-ind-4 span:last-child', '預點菜色', 'Pre-Order');
+
+  // Step 1
+  setTxt('#cust-step-1 h1', '請選擇分店與用餐方式', 'Select Store & Dining Mode');
+  setTxt('label[for="cust-store-select"]', '選擇分店', 'SELECT STORE');
+  setTxt('#opt-dinein .text-lg', '門市內用', 'Dine-In');
+  setTxt('#opt-dinein .text-xs', '舒適座位享用 · 另計 10% 服務費', 'Table seating · +10% service charge');
+  setTxt('#opt-takeout .text-lg', '外帶自取', 'Takeout');
+  setTxt('#opt-takeout .text-xs', '準時取餐免排隊 · 免收服務費', 'Skip the line · No service charge');
+  setTxt('#cust-step-1 > button', '下一步：選擇日期與時段', 'Next: Date & Time');
+
+  // Step 2
+  setTxt('label[for="cust-date"]', '日期', 'Date');
+  setTxt('#cust-step-2 button[onclick="goToCustomerStep(1)"]', '上一步', 'Back');
+  setTxt('#cust-step-2 button[onclick="goToCustomerStep(3)"]', '繼續', 'Continue');
+
+  // Step 3
+  setTxt('#cust-step-3 h2', '填寫顧客資料', 'Guest Information');
+  setTxt('#cust-step-3 p', '資料將同步至門市後台供外場核對接待', 'Details sync with the store for your arrival.');
+  setTxt('label[for="cust-adults"]', '大人人數', 'Adults');
+  setTxt('label[for="cust-children"]', '小孩人數', 'Children');
+  setTxt('#cust-step-3 button[onclick="goToCustomerStep(2)"]', '上一步', 'Back');
+  setTxt('#cust-step-3 button[onclick="validateAndEnterMenu()"]', '進入菜單', 'Browse Menu');
+
+  // Step 4
+  const searchInp = document.getElementById('menu-search-input');
+  if (searchInp) searchInp.placeholder = en ? 'Search dishes (e.g. Prawn Cake, Curry)...' : '搜尋菜色名稱（如：月亮蝦餅、咖哩）...';
+  setTxt('#cust-step-4 button[onclick="goToCustomerStep(2)"]', '修改時段／資料', 'Edit Time / Info');
+  setTxt('#btn-submit-order', '確認送出預點', 'Submit Pre-Order');
+  setTxt('#cart-upsell-box .uppercase', '重點加購推薦', 'Recommended Add-On');
+  setTxt('#cart-upsell-box button', '+ 加購', '+ Add');
+
+  // Re-render dynamic customer views
+  renderCustomerTimeSlots();
+  renderCategoryTabs();
+  renderCustomerMenu();
+  updateCartUI();
+}
+
 function toggleLanguage() {
   state.lang = state.lang === 'zh' ? 'en' : 'zh';
-  document.getElementById('lang-label').textContent = state.lang === 'zh' ? '中文' : 'EN';
-  showToast(state.lang === 'zh' ? '已切換為繁體中文介面' : 'Switched to English labels where applicable', 'info');
+  applyLanguageToStaticUI();
+  showToast(state.lang === 'zh' ? '已切換為繁體中文介面' : 'Switched to English', 'info');
 }
 
 // ==================== CUSTOMER FRONTEND LOGIC ====================
@@ -1816,7 +2016,7 @@ function renderCustomerTimeSlots() {
   const isDineIn = state.customerDraft.diningType === '內用';
   const titleEl = document.getElementById('cust-step2-title');
   if (titleEl) {
-    titleEl.textContent = isDineIn ? '入座時段' : '取餐時段';
+    titleEl.textContent = state.lang === 'en' ? (isDineIn ? 'Seating Time' : 'Pickup Time') : (isDineIn ? '入座時段' : '取餐時段');
   }
 
   const lunchList = isDineIn ? DINEIN_LUNCH_SLOTS : TAKEOUT_LUNCH_SLOTS;
@@ -1887,7 +2087,8 @@ function goToCustomerStep(step) {
 function validateAndEnterMenu() {
   const name = document.getElementById('cust-name').value.trim();
   const phone = document.getElementById('cust-phone').value.trim();
-  const note = document.getElementById('cust-note').value.trim();
+  const adults = Math.max(1, parseInt(document.getElementById('cust-adults').value, 10) || 1);
+  const children = Math.max(0, parseInt(document.getElementById('cust-children').value, 10) || 0);
   const errEl = document.getElementById('cust-step3-error');
 
   if (!name || !phone) {
@@ -1898,7 +2099,9 @@ function validateAndEnterMenu() {
   errEl.classList.add('hidden');
   state.customerDraft.name = name;
   state.customerDraft.phone = phone;
-  state.customerDraft.note = note;
+  state.customerDraft.adults = adults;
+  state.customerDraft.children = children;
+  state.customerDraft.note = `大人 ${adults} 位、小孩 ${children} 位`;
   goToCustomerStep(4);
 }
 
@@ -1915,7 +2118,7 @@ function renderCategoryTabs() {
             ? 'brand-purple text-white shadow-sm'
             : 'bg-white text-stone-700 border border-stone-200 hover:border-violet-400'
         }">
-        ${cat}
+        ${tCat(cat)}
       </button>
     `;
   }).join('');
@@ -1957,14 +2160,14 @@ function renderCustomerMenu() {
     }
     grid.innerHTML = availSets.map(s => `
       <div class="bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm flex flex-col justify-between hover:border-violet-400 transition">
-        ${s.image ? `<img src="${s.image}" alt="${s.name}" class="w-full h-44 object-cover" onerror="this.style.display='none'" />` : ''}
+        ${s.image ? `<div class="w-full aspect-[4/3] bg-stone-50 flex items-center justify-center overflow-hidden border-b border-stone-100"><img src="${s.image}" alt="${s.name}" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'" /></div>` : ''}
         <div class="p-4 flex-1 flex flex-col justify-between gap-3">
           <div>
             <div class="flex items-center justify-between gap-2">
-              <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">${s.people} 人套餐</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">${state.lang === "en" ? s.people + " Persons" : s.people + " 人套餐"}</span>
               <span class="text-xs text-stone-400">可自由選配菜色</span>
             </div>
-            <h4 class="font-bold text-violet-950 text-lg mt-2">${s.name}</h4>
+            <h4 class="font-bold text-violet-950 text-lg mt-2">${tSet(s.name)}</h4>
             <p class="text-xs text-stone-600 mt-1">${s.summary}</p>
             <div class="mt-2 text-[11px] text-stone-500">含特選：${s.fixed.join('、')}</div>
           </div>
@@ -1972,7 +2175,7 @@ function renderCustomerMenu() {
             <span class="font-bold text-violet-950 text-lg">NT$ ${s.price.toLocaleString()}</span>
             <button type="button" onclick="openSetConfigModal('${s.id}')"
               class="px-4 py-2 rounded-xl brand-purple brand-purple-hover text-white text-xs font-semibold transition">
-              選購套餐菜色 →
+              ${state.lang === "en" ? "Select Dishes →" : "選購套餐菜色 →"}
             </button>
           </div>
         </div>
@@ -1994,11 +2197,11 @@ function renderCustomerMenu() {
 
   grid.innerHTML = list.map(d => `
     <div class="bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm flex flex-col justify-between hover:border-violet-300 transition">
-      ${d.image ? `<img src="${d.image}" alt="${d.name}" class="w-full h-40 object-cover" onerror="this.style.display='none'" />` : ''}
+      ${d.image ? `<div class="w-full aspect-[4/3] bg-stone-50 flex items-center justify-center overflow-hidden border-b border-stone-100"><img src="${d.image}" alt="${d.name}" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'" /></div>` : ''}
       <div class="p-4 flex-1 flex flex-col justify-between gap-3">
         <div>
           <div class="flex items-center justify-between gap-2">
-            <h4 class="font-bold text-stone-900 text-base">${d.name}</h4>
+            <h4 class="font-bold text-stone-900 text-base">${tDish(d.name)}</h4>
             ${renderChiliIcons(d.spiceLevel)}
           </div>
           ${(() => { const clean = cleanDishNoteForFrontend(d.note); return clean ? `<p class=\"text-xs text-stone-500 mt-1\">${clean}</p>` : ''; })()}
@@ -2016,7 +2219,13 @@ function renderCustomerMenu() {
 }
 
 // ==================== SET MEAL CONFIGURATOR ====================
-function openSetConfigModal(setId) {
+function openSetConfigForAdminCreate() {
+  const setId = document.getElementById('create-order-set-select').value;
+  openSetConfigModal(setId, 'admin-create');
+}
+
+function openSetConfigModal(setId, target = 'customer') {
+  state.setConfigTarget = target;
   const setObj = state.sets.find(s => s.id === setId);
   if (!setObj) return;
   const selections = {};
@@ -2178,7 +2387,7 @@ function confirmAddSetToCart() {
   });
 
   const detailText = subItems.map(x => `${x.name}×${x.qty}`).join('、');
-  state.cart.push({
+  const setItem = {
     dishId: s.id + '_' + Date.now(),
     name: `${s.name}（${s.people}人）`,
     category: '套餐組合',
@@ -2187,11 +2396,18 @@ function confirmAddSetToCart() {
     qty: 1,
     isSet: true,
     subItems
-  });
+  };
 
   closeModal('modal-set-config');
-  updateCartUI();
-  showToast(`已將「${s.name}」加入預點餐明細`);
+  if (state.setConfigTarget === 'admin-create') {
+    creatingOrderItems.push(setItem);
+    renderCreatingOrderItems();
+    showToast(`已將「${s.name}」加入後台開單明細`);
+  } else {
+    state.cart.push(setItem);
+    updateCartUI();
+    showToast(`已將「${s.name}」加入預點餐明細`);
+  }
 }
 
 function handleAddDishClick(dishId) {
@@ -2226,11 +2442,24 @@ function addItemToCart(dish, spice) {
   showToast(`已加入「${dish.name}」`);
 }
 
+function renderUpsellBox() {
+  const box = document.getElementById('cart-upsell-box');
+  const info = document.getElementById('cart-upsell-info');
+  if (!box || !info) return;
+  const dish = state.menu.find(d => d.name === state.upsellDishName) || state.menu.find(d => d.name === '厚泰奶布丁');
+  if (!dish) {
+    box.classList.add('hidden');
+    return;
+  }
+  box.classList.remove('hidden');
+  info.innerHTML = `${tDish(dish.name)} <span class="text-amber-700">NT$ ${dish.price}</span>`;
+}
+
 function quickAddRecommended() {
-  const pudding = state.menu.find(d => d.name === '厚泰奶布丁' && isItemAvailableFor(d, state.customerDraft.diningType)) || {
+  const dish = state.menu.find(d => d.name === state.upsellDishName) || state.menu.find(d => d.name === '厚泰奶布丁') || {
     id: 'dish_rec_pudding', name: '厚泰奶布丁', category: '有點甜', price: 100
   };
-  addItemToCart(pudding, '辣度固定');
+  addItemToCart(dish, '辣度固定');
 }
 
 function changeCartQty(idx, delta) {
@@ -2242,17 +2471,18 @@ function changeCartQty(idx, delta) {
 }
 
 function updateCartUI() {
+  renderUpsellBox();
   const listEl = document.getElementById('cart-items-list');
   const totalQty = state.cart.reduce((s, it) => s + it.qty, 0);
   document.getElementById('cart-count-badge').textContent = `${totalQty} 份`;
 
   if (state.cart.length === 0) {
-    listEl.innerHTML = `<p class="text-sm text-stone-400 text-center py-6">尚未選擇任何美味菜色</p>`;
+    listEl.innerHTML = `<p class="text-sm text-stone-400 text-center py-6">${state.lang === "en" ? "No dishes selected yet" : "尚未選擇任何美味菜色"}</p>`;
   } else {
     listEl.innerHTML = state.cart.map((it, idx) => `
       <div class="flex items-center justify-between gap-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200/70">
         <div class="min-w-0">
-          <div class="text-sm font-semibold text-stone-800 truncate">${it.name}</div>
+          <div class="text-sm font-semibold text-stone-800 truncate">${it.isSet ? tSet(it.name) : tDish(it.name)}</div>
           <div class="text-xs text-stone-500">NT$ ${it.price} ${it.spice !== '辣度固定' ? `· ${it.spice}` : ''}</div>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
@@ -3075,6 +3305,8 @@ function openCreateOrderModal() {
 
   const dishSel = document.getElementById('create-order-dish-select');
   dishSel.innerHTML = state.menu.map(d => `<option value="${d.id}">${d.name} (NT$ ${d.price})</option>`).join('');
+  const setSel = document.getElementById('create-order-set-select');
+  setSel.innerHTML = state.sets.map(s => `<option value="${s.id}">${s.name} (NT$ ${s.price.toLocaleString()})</option>`).join('');
   renderCreatingOrderItems();
   document.getElementById('modal-create-order').classList.remove('hidden');
 }
@@ -3113,9 +3345,12 @@ function renderCreatingOrderItems() {
   } else {
     container.innerHTML = creatingOrderItems.map((it, idx) => `
       <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
-        <div>
-          <span class="text-sm font-semibold text-slate-800">${it.name}</span>
-          <span class="text-xs text-slate-500 ml-1">NT$ ${it.price}</span>
+        <div class="min-w-0 pr-2">
+          <div>
+            <span class="text-sm font-semibold text-slate-800">${it.name}</span>
+            <span class="text-xs text-slate-500 ml-1">NT$ ${it.price.toLocaleString()}</span>
+          </div>
+          ${it.isSet && Array.isArray(it.subItems) ? `<div class="text-[11px] text-slate-500 truncate">${it.subItems.map(s => `${s.name}×${s.qty}`).join('、')}</div>` : ''}
         </div>
         <div class="flex items-center gap-1.5">
           <button type="button" onclick="changeCreatingItemQty(${idx}, -1)" class="w-6 h-6 rounded bg-white border border-slate-300 text-xs font-bold">-</button>
@@ -3289,7 +3524,7 @@ function switchAdminMenuSubtab(sub) {
 function updateImagePreviewBox(prefix, src) {
   const box = document.getElementById(`${prefix}-img-preview-box`);
   if (src) {
-    box.innerHTML = `<img src="${src}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\'text-[10px] text-rose-500\'>載入失敗</span>'" />`;
+    box.innerHTML = `<img src="${src}" class="w-full h-full object-contain bg-white" onerror="this.parentElement.innerHTML='<span class=\'text-[10px] text-rose-500\'>載入失敗</span>'" />`;
   } else {
     box.innerHTML = `<i data-lucide="image" class="w-7 h-7"></i>`;
     lucide.createIcons();
@@ -3303,8 +3538,9 @@ function handleImageFileUpload(event, prefix) {
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
-      const maxW = 480;
-      const scale = img.width > maxW ? maxW / img.width : 1;
+      const maxDim = 640;
+      const longest = Math.max(img.width, img.height);
+      const scale = longest > maxDim ? maxDim / longest : 1;
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(img.width * scale);
       canvas.height = Math.round(img.height * scale);
@@ -3356,7 +3592,7 @@ function renderAdminMenuTable() {
     <tr class="hover:bg-slate-50 ${(!d.availableDineIn && !d.availableTakeout) ? 'opacity-60' : ''}">
       <td class="px-4 py-2.5">
         ${d.image
-          ? `<img src="${d.image}" alt="${d.name}" class="w-11 h-11 rounded-lg object-cover border border-slate-200" />`
+          ? `<img src="${d.image}" alt="${d.name}" class="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200" />`
           : `<div class="w-11 h-11 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-[10px]">無圖</div>`
         }
       </td>
@@ -3381,6 +3617,12 @@ function renderAdminMenuTable() {
         </button>
       </td>
       <td class="px-4 py-3 text-right whitespace-nowrap space-x-1">
+        <button type="button" onclick="setUpsellDish('${d.name.replace(/'/g, "\\'")}')"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+            state.upsellDishName === d.name
+              ? 'bg-amber-500 text-white'
+              : 'bg-amber-50 hover:bg-amber-100 text-amber-800'
+          }">${state.upsellDishName === d.name ? '⭐ 推薦加購中' : '設為推薦加購'}</button>
         <button type="button" onclick="openEditDishModal('${d.id}')"
           class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-violet-100 text-violet-900 text-xs font-semibold">編輯 / 圖片</button>
         <button type="button" onclick="deleteDish('${d.id}')"
@@ -3395,7 +3637,7 @@ function renderAdminSetsTable() {
     <tr class="hover:bg-slate-50 ${(!s.availableDineIn && !s.availableTakeout) ? 'opacity-60' : ''}">
       <td class="px-4 py-2.5">
         ${s.image
-          ? `<img src="${s.image}" alt="${s.name}" class="w-11 h-11 rounded-lg object-cover border border-slate-200" />`
+          ? `<img src="${s.image}" alt="${s.name}" class="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200" />`
           : `<div class="w-11 h-11 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-[10px]">無圖</div>`
         }
       </td>
@@ -3475,6 +3717,14 @@ function saveSetForm() {
   showToast(`已更新「${name}」，前台已同步`);
 }
 
+function setUpsellDish(dishName) {
+  state.upsellDishName = dishName;
+  safeSet(STORAGE_KEYS.UPSELL, dishName);
+  renderAdminMenuTable();
+  renderUpsellBox();
+  showToast(`已將「${dishName}」設為前台重點加購推薦`);
+}
+
 function toggleDishAvailability(id, channel) {
   const d = state.menu.find(x => x.id === id);
   if (!d) return;
@@ -3549,6 +3799,7 @@ function saveDishForm() {
   if (state.editingDishId) {
     const d = state.menu.find(x => x.id === state.editingDishId);
     if (d) {
+      const oldName = d.name;
       d.name = name;
       d.category = category;
       d.price = price;
@@ -3556,6 +3807,12 @@ function saveDishForm() {
       d.spiceCustom = true;
       d.note = note;
       d.image = state.dishFormImage || '';
+      // Sync image across all categories with the same dish name
+      state.menu.forEach(other => {
+        if (other.id !== d.id && (other.name === name || other.name === oldName)) {
+          other.image = d.image;
+        }
+      });
     }
     showToast(`已更新菜色「${name}」，前台已同步`);
   } else {
