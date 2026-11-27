@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SIAM MORE 饗泰多 — 智慧預點餐系統</title>
+  <title>SIAM MORE 饗泰多 — 顧客預點餐與門市智慧後台系統</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -419,6 +421,10 @@
             </select>
           </div>
           <div id="admin-sidebar-user" class="mt-2.5 text-[11px] text-slate-400 truncate"></div>
+          <div id="firebase-status-badge" class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-medium text-amber-300 border border-slate-700">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            本機模式（未連接 Firebase）
+          </div>
         </div>
 
         <nav class="p-3 flex lg:flex-col gap-1.5 overflow-x-auto no-scrollbar">
@@ -1323,6 +1329,141 @@
   </div>
 
 <script>
+// ==================== FIREBASE 雲端資料庫設定區 ====================
+// 請將您在 Firebase Console 取得的 firebaseConfig 貼在下方對應欄位：
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAvW1Wg26-Ds5fexNaCqy9GuVJYE9qaqeM",
+  authDomain: "siam-more.firebaseapp.com",
+  projectId: "siam-more",
+  storageBucket: "siam-more.firebasestorage.app",
+  messagingSenderId: "827372377966",
+  appId: "1:827372377966:web:4f2fc03e9a3ed3ed58137f"
+};
+
+let db = null;
+let firebaseConnected = false;
+
+function isFirebaseConfigured() {
+  return Boolean(
+    typeof firebase !== 'undefined' &&
+    FIREBASE_CONFIG &&
+    FIREBASE_CONFIG.apiKey &&
+    FIREBASE_CONFIG.projectId &&
+    FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID'
+  );
+}
+
+function updateFirebaseStatusBadge(connected, label) {
+  const el = document.getElementById('firebase-status-badge');
+  if (!el) return;
+  if (connected) {
+    el.className = 'mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 text-[11px] font-medium text-emerald-300 border border-emerald-700/60';
+    el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>${label || 'Firebase 雲端即時同步中'}`;
+  } else {
+    el.className = 'mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-medium text-amber-300 border border-slate-700';
+    el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>${label || '本機模式（請填入 Firebase 金鑰）'}`;
+  }
+}
+
+async function cloudSaveOrder(order) {
+  if (!firebaseConnected || !db) return;
+  try {
+    await db.collection('siammore_orders').doc(order.id).set(order);
+  } catch (e) {
+    console.error('Firebase save order error:', e);
+    showToast('雲端同步訂單失敗，請確認 Firestore 規則設定', 'error');
+  }
+}
+
+async function cloudSaveConfig(docName, payload) {
+  if (!firebaseConnected || !db) return;
+  try {
+    await db.collection('siammore_config').doc(docName).set({ data: payload, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    console.error('Firebase save config error:', e);
+    showToast('雲端同步設定失敗，請確認網路與權限', 'error');
+  }
+}
+
+function initFirebaseSync() {
+  if (!isFirebaseConfigured()) {
+    updateFirebaseStatusBadge(false);
+    return;
+  }
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    db = firebase.firestore();
+    firebaseConnected = true;
+    updateFirebaseStatusBadge(true, 'Firebase 雲端即時同步中');
+
+    // 1. Real-time Orders Collection (each order is its own document -> safe for concurrent customers!)
+    db.collection('siammore_orders').onSnapshot((snap) => {
+      const cloudOrders = [];
+      snap.forEach(doc => cloudOrders.push(doc.data()));
+      cloudOrders.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      state.orders = cloudOrders;
+      safeSet(STORAGE_KEYS.ORDERS, state.orders);
+      if (state.adminLoggedIn) refreshAdminViews();
+    }, (err) => {
+      console.error('Orders snapshot error:', err);
+      updateFirebaseStatusBadge(false, 'Firebase 權限或連線錯誤');
+    });
+
+    // 2. Real-time Config Docs (auth, menu, sets, upsell)
+    const configRef = db.collection('siammore_config');
+
+    configRef.doc('auth').onSnapshot((doc) => {
+      if (doc.exists && doc.data() && doc.data().data) {
+        state.auth = doc.data().data;
+        safeSet(STORAGE_KEYS.AUTH, state.auth);
+        updateStoreBranding();
+      } else {
+        cloudSaveConfig('auth', state.auth);
+      }
+    });
+
+    configRef.doc('menu').onSnapshot((doc) => {
+      if (doc.exists && doc.data() && Array.isArray(doc.data().data)) {
+        state.menu = normalizeAvailability(doc.data().data);
+        safeSet(STORAGE_KEYS.MENU, state.menu);
+  cloudSaveConfig('menu', state.menu);
+        refreshAllViews();
+      } else {
+        cloudSaveConfig('menu', state.menu);
+      }
+    });
+
+    configRef.doc('sets').onSnapshot((doc) => {
+      if (doc.exists && doc.data() && Array.isArray(doc.data().data)) {
+        state.sets = normalizeAvailability(doc.data().data);
+        safeSet(STORAGE_KEYS.SETS, state.sets);
+  cloudSaveConfig('sets', state.sets);
+        refreshAllViews();
+      } else {
+        cloudSaveConfig('sets', state.sets);
+      }
+    });
+
+    configRef.doc('upsell').onSnapshot((doc) => {
+      if (doc.exists && doc.data() && doc.data().data !== undefined) {
+        state.upsellDishName = doc.data().data;
+        safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
+      cloudSaveConfig('upsell', state.upsellDishName);
+        renderUpsellBox();
+        if (state.adminLoggedIn && state.adminTab === 'menu') renderAdminMenuTable();
+      } else {
+        cloudSaveConfig('upsell', state.upsellDishName);
+      }
+    });
+  } catch (e) {
+    console.error('Firebase init error:', e);
+    firebaseConnected = false;
+    updateFirebaseStatusBadge(false, 'Firebase 初始化失敗');
+  }
+}
+
 // ==================== CONSTANTS & INITIAL SEED DATA ====================
 const STORAGE_KEYS = {
   ORDERS: 'siammore_orders_2027cny_v1',
@@ -2659,6 +2800,7 @@ function submitCustomerOrder() {
 
   state.orders.unshift(newOrder);
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
+  cloudSaveOrder(newOrder);
   if (state.adminLoggedIn) refreshAdminViews();
 
   document.getElementById('order-confirm-card').innerHTML = `
@@ -2849,6 +2991,7 @@ function saveAdminSettings() {
   state.auth.storeName = storeName;
   state.auth.email = newEmail;
   safeSet(STORAGE_KEYS.AUTH, state.auth);
+  cloudSaveConfig('auth', state.auth);
   updateStoreBranding();
   loadSettingsForm();
   showFb('帳號、密碼與門市設定已成功更新！下次登入請使用新帳密。', true);
@@ -2858,6 +3001,7 @@ function saveAdminSettings() {
 function resetDefaultAuth() {
   state.auth = { ...DEFAULT_AUTH };
   safeSet(STORAGE_KEYS.AUTH, state.auth);
+  cloudSaveConfig('auth', state.auth);
   updateStoreBranding();
   loadSettingsForm();
   showToast('已重設為預設管理員帳密', 'info');
@@ -3621,6 +3765,7 @@ function saveCreatedOrder() {
 
   state.orders.unshift(newOrder);
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
+  cloudSaveOrder(newOrder);
   closeModal('modal-create-order');
   renderAdminOrders();
   showToast(`已新增訂單 ${newOrder.id}`);
@@ -3636,6 +3781,7 @@ function quickUpdateOrderStatus(id, newStatus) {
   if (!o) return;
   o.status = newStatus;
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
+  cloudSaveOrder(o);
   renderAdminOrders();
   showToast(`訂單 ${id} 狀態已更新為「${newStatus}」`);
 }
@@ -3650,6 +3796,7 @@ function cancelOrder(id) {
   if (!o) return;
   o.status = '已取消';
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
+  cloudSaveOrder(o);
   renderAdminOrders();
   showToast(`已取消訂單 ${id}`, 'info');
 }
@@ -3735,6 +3882,7 @@ function saveEditedOrder() {
   const totals = buildOrderTotals(d.items, d.diningType);
   state.orders[idx] = { ...d, ...totals };
   safeSet(STORAGE_KEYS.ORDERS, state.orders);
+  cloudSaveOrder(state.orders[idx]);
   closeModal('modal-edit-order');
   renderAdminOrders();
   showToast('訂單修改已儲存並同步');
@@ -3918,6 +4066,7 @@ function toggleSetAvailability(id, channel) {
     showToast(`已將「${s.name}」外帶調整為${s.availableTakeout ? '上架' : '下架'}`);
   }
   safeSet(STORAGE_KEYS.SETS, state.sets);
+  cloudSaveConfig('sets', state.sets);
   renderAdminSetsTable();
 }
 
@@ -3951,6 +4100,7 @@ function saveSetForm() {
   s.price = price;
   s.image = state.setFormImage || '';
   safeSet(STORAGE_KEYS.SETS, state.sets);
+  cloudSaveConfig('sets', state.sets);
   closeModal('modal-set-form');
   renderAdminSetsTable();
   showToast(`已更新「${name}」，前台已同步`);
@@ -3979,8 +4129,11 @@ function importMenuConfigJSON(event) {
       if (Array.isArray(data.sets)) state.sets = normalizeAvailability(data.sets);
       if (data.upsellDishName !== undefined) state.upsellDishName = data.upsellDishName;
       safeSet(STORAGE_KEYS.MENU, state.menu);
+  cloudSaveConfig('menu', state.menu);
       safeSet(STORAGE_KEYS.SETS, state.sets);
+  cloudSaveConfig('sets', state.sets);
       safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
+      cloudSaveConfig('upsell', state.upsellDishName);
       refreshAllViews();
       showToast('已成功匯入菜單與圖片設定！');
     } catch (err) {
@@ -3994,12 +4147,14 @@ function setUpsellDish(dishName) {
   if (state.upsellDishName === dishName) {
     state.upsellDishName = '';
     safeSet(STORAGE_KEYS.UPSELL, '');
+    cloudSaveConfig('upsell', '');
     renderAdminMenuTable();
     renderUpsellBox();
     showToast('已取消前台重點加購推薦', 'info');
   } else {
     state.upsellDishName = dishName;
     safeSet(STORAGE_KEYS.UPSELL, dishName);
+    cloudSaveConfig('upsell', dishName);
     renderAdminMenuTable();
     renderUpsellBox();
     showToast(`已將「${dishName}」設為前台重點加購推薦`);
@@ -4017,6 +4172,7 @@ function toggleDishAvailability(id, channel) {
     showToast(`已將「${d.name}」外帶調整為${d.availableTakeout ? '上架' : '下架'}`);
   }
   safeSet(STORAGE_KEYS.MENU, state.menu);
+  cloudSaveConfig('menu', state.menu);
   renderAdminMenuTable();
 }
 
@@ -4026,6 +4182,7 @@ function deleteDish(id) {
   const name = state.menu[idx].name;
   state.menu.splice(idx, 1);
   safeSet(STORAGE_KEYS.MENU, state.menu);
+  cloudSaveConfig('menu', state.menu);
   renderAdminMenuTable();
   showToast(`已刪除菜色「${name}」`, 'info');
 }
@@ -4113,6 +4270,7 @@ function saveDishForm() {
   }
 
   safeSet(STORAGE_KEYS.MENU, state.menu);
+  cloudSaveConfig('menu', state.menu);
   closeModal('modal-dish-form');
   renderAdminMenuTable();
 }
@@ -4135,6 +4293,7 @@ function refreshAllViews() {
 
 window.addEventListener('DOMContentLoaded', () => {
   loadInitialData();
+  initFirebaseSync();
   initStoreSelectors();
   updateStoreBranding();
   renderCustomerTimeSlots();
