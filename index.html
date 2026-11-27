@@ -1835,7 +1835,7 @@ window.addEventListener('storage', (e) => {
     state.orders = safeGet(STORAGE_KEYS.ORDERS, state.orders);
     state.auth = safeGet(STORAGE_KEYS.AUTH, state.auth);
     refreshAllViews();
-    showToast('偵測到其他分頁更新，資料已即時同步', 'info');
+
   }
 });
 
@@ -1850,6 +1850,7 @@ function showToast(message, type = 'success') {
   };
   el.className = `px-4 py-2.5 rounded-xl shadow-lg text-xs sm:text-sm font-medium fade-in pointer-events-auto ${colors[type] || colors.info}`;
   el.textContent = message;
+  while (container.children.length >= 2) container.firstChild.remove();
   container.appendChild(el);
   setTimeout(() => {
     el.remove();
