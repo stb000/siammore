@@ -89,7 +89,7 @@
           <div class="flex-1 h-0.5 bg-stone-200 mx-2"></div>
           <div id="step-ind-4" class="flex items-center gap-1.5">
             <span class="w-6 h-6 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-xs">4</span>
-            <span>點餐結帳</span>
+            <span>預點菜色</span>
           </div>
         </div>
       </div>
@@ -428,13 +428,20 @@
                 class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:ring-2 focus:ring-violet-600 outline-none">
                 <option value="all">全部日期</option>
                 <option value="today">今日 (2026-11-27)</option>
-                <option value="custom">指定單日</option>
+                <option value="custom">指定日期區間</option>
               </select>
             </div>
-            <div id="filter-custom-date-wrap" class="hidden">
-              <label for="filter-custom-date" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">選擇日期</label>
-              <input id="filter-custom-date" type="date" onchange="renderAdminStats()"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 outline-none" />
+            <div id="filter-custom-date-wrap" class="hidden sm:col-span-2 lg:col-span-2 grid grid-cols-2 gap-2">
+              <div>
+                <label for="filter-date-start" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">開始日期</label>
+                <input id="filter-date-start" type="date" onchange="renderAdminStats()"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 outline-none" />
+              </div>
+              <div>
+                <label for="filter-date-end" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">結束日期</label>
+                <input id="filter-date-end" type="date" onchange="renderAdminStats()"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 outline-none" />
+              </div>
             </div>
             <div>
               <label for="filter-dining" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">用餐管道</label>
@@ -642,9 +649,21 @@
               <h2 class="text-xl sm:text-2xl font-bold text-slate-900">訂單看盤監控與外場調度</h2>
               <p class="text-xs sm:text-sm text-slate-500">檢視月曆訂位分佈、即時更新訂單狀態、修改品項或加點菜色</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs">
+                <span class="text-slate-500 font-semibold">日期區間</span>
+                <input id="order-filter-start" type="date" onchange="renderAdminOrders()" class="outline-none text-slate-700" />
+                <span class="text-slate-400">~</span>
+                <input id="order-filter-end" type="date" onchange="renderAdminOrders()" class="outline-none text-slate-700" />
+                <button type="button" onclick="clearOrderDateRange()" class="text-violet-700 font-semibold hover:underline ml-1">清除</button>
+              </div>
               <input id="order-search-input" type="text" oninput="renderAdminOrders()" placeholder="搜尋姓名、電話或訂單編號..."
                 class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-sm outline-none focus:ring-2 focus:ring-violet-600" />
+              <button type="button" onclick="openCreateOrderModal()"
+                class="px-4 py-2 rounded-xl brand-purple brand-purple-hover text-white text-sm font-semibold flex items-center gap-1.5 shadow-sm transition">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                新增訂單
+              </button>
             </div>
           </div>
 
@@ -865,6 +884,81 @@
     </div>
   </div>
 
+  <!-- Admin Create Order Modal -->
+  <div id="modal-create-order" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl fade-in max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+        <h3 class="text-lg font-bold text-slate-900">後台手動新增訂單</h3>
+        <button type="button" onclick="closeModal('modal-create-order')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto space-y-3.5 pr-1">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">分店</label>
+            <select id="create-order-store" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">用餐方式</label>
+            <select id="create-order-dining" onchange="onCreateOrderDiningChange()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="內用">內用（含 10% 服務費）</option>
+              <option value="外帶">外帶（免服務費）</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">日期</label>
+            <input id="create-order-date" type="date" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">時段</label>
+            <select id="create-order-slot" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">訂單狀態</label>
+            <select id="create-order-status" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="待確認">待確認</option>
+              <option value="備餐中">備餐中</option>
+              <option value="已完成">已完成</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">顧客姓名 *</label>
+            <input id="create-order-name" type="text" placeholder="輸入顧客姓名" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">行動電話 *</label>
+            <input id="create-order-phone" type="tel" placeholder="輸入行動電話" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">備註（選填）</label>
+          <input id="create-order-note" type="text" placeholder="如：現場電話訂餐、過敏備註" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="text-xs font-bold text-slate-600 mb-2">加入菜色</div>
+          <div class="flex gap-2">
+            <select id="create-order-dish-select" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"></select>
+            <button type="button" onclick="addDishToCreatingOrder()"
+              class="px-3.5 py-2 rounded-xl bg-violet-700 hover:bg-violet-800 text-white text-xs font-semibold">加入</button>
+          </div>
+        </div>
+        <div id="create-order-items" class="space-y-2"></div>
+      </div>
+      <div class="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between">
+        <div id="create-order-total-preview" class="text-base font-bold text-violet-900">TOTAL: NT$ 0</div>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeModal('modal-create-order')" class="px-4 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700">取消</button>
+          <button type="button" onclick="saveCreatedOrder()" class="px-5 py-2 rounded-xl brand-purple text-white text-sm font-semibold">建立訂單</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Admin Edit Order Modal -->
   <div id="modal-edit-order" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl fade-in max-h-[90vh] flex flex-col">
@@ -1005,10 +1099,12 @@
             <input id="dish-form-price" type="number" min="1" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">辣度屬性</label>
-            <select id="dish-form-spice" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white">
-              <option value="辣度固定">辣度固定</option>
-              <option value="可調辣">可調辣</option>
+            <label class="block text-xs font-bold text-slate-600 mb-1">辣度標示（辣椒數）</label>
+            <select id="dish-form-spice-level" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="0">0 不辣</option>
+              <option value="1">1 小辣 🌶️</option>
+              <option value="2">2 中辣 🌶️🌶️</option>
+              <option value="3">3 大辣 🌶️🌶️🌶️</option>
             </select>
           </div>
         </div>
@@ -1202,6 +1298,114 @@ const DEFAULT_AUTH = {
   storeName: '饗泰多松高店'
 };
 
+
+const OFFICIAL_DESC_MAP = {
+  '冠軍月亮蝦餅': '使用鮮甜草蝦與白蝦手打成型，2cm的厚實Q彈搭配清甜梅子醬美味再升級！',
+  '蒜酥松坂蝦醬拌飯': '蝦醬拌飯清新鹹香，搭配外酥內嫩的松阪豬與金黃蒜酥，展現豐富口感與香氣層次。',
+  '香料爐烤紙包魚': '利用紙封烘烤鎖住鮮魚與香料精華，魚肉細嫩多汁，搭配特製酸辣醬汁，香氣層層堆疊。',
+  '黃咖哩軟殼蟹': '香酥軟殼蟹拌入雞蛋黃與黃咖哩爆炒的濃郁醬汁，香濃滑順蟹香四溢。【可做不辣】',
+  '青檸酸辣海鮮湯': '以酸辣清湯為基底，融合南薑、香茅與檸檬葉燉煮海鮮與菇類，加入蝦膏風味鮮明。',
+  '咔滋椒麻雞': '酥脆多汁的現炸雞腿排淋上酸甜醬汁，香麻藤椒油更是神來一筆。【可做不辣】',
+  '帕能咖哩雞': '以椰奶為基底的經典咖哩—融合花生與香料的醇厚氣息，醬汁濃稠滑順，包裹嫩雞片，單吃、拌飯都美味！',
+  '楓糖炙烤子排': '豬肋排以香茅蒸煮提香，蜜製燒烤醬炙烤至色澤油亮，肉質飽滿多汁。搭配清爽花椰泡菜，風味更顯層次。',
+  '厚煎海鮮烘蛋': '超浮誇2cm厚烘蛋，每一口都吃得到滿滿蝦仁與海鮮。',
+  '香煎瀑布牛涼拌': '特選牛肉切片搭配新鮮蔬菜與香料，大滿足的肉食開胃菜。【可做不辣】',
+  '酸辣海鮮涼拌': '澎湃海鮮與鮮甜蔬菜拌入爽口醬汁，酸辣又涮嘴的道地泰味。',
+  '現搗青木瓜涼拌': '傳承東北道地鹹香風味，加上鹹蛋豐富了青木瓜的味覺層次。【可做蛋素/不辣】',
+  '泰式手撕雞涼拌': '鹽焗手撕雞搭配各式蔬菜拌入泰式酸甜醬汁，爽口涮嘴又開胃！【可做不辣】',
+  '泰味三拼(小菜3款)': '集結三種風味小菜（花椰菜、泰味雲耳、酸辣蒜黃瓜），品嚐泰式酸辣鮮香。',
+  '泰味雲耳(小菜②)': '黑木耳搭配青木瓜絲與辣醬，酸辣脆口有層次！',
+  '蒜蝦拌花椰(小菜①)': '蝦醬的鮮香與蒜味花椰菜，鹹鮮風味滿溢。',
+  '酸辣蒜黃瓜(小菜③)': '蒜味小黃瓜搭配自製辣醬與白醋，酸甜平衡、脆爽清新。',
+  '東北淚之虎': '火烤鮮嫩牛排、外焦香內多汁，搭配酸甜烤肉醬，難怪老虎吃不到會想哭！',
+  '爆爽辣炒牛': '鮮嫩牛肉爆炒綠胡椒和蠔油魚露，收汁起鍋泰味滿點！',
+  '蠔氣爆炒牛': '爆炒牛肉結合蠔油與九層塔，鹹香濃厚蠔下飯！',
+  '扒飯打拋豬': '肥二瘦八的黃金比例豬絞肉大火爆炒逼出羅勒清香，不可錯過的白飯殺手！【可做不辣】',
+  '香烤松阪豬': '使用上選豬頸肉，恰恰好的粉紅色，恰恰好吃！',
+  '泰炸香料豬': '嚴選豬肉以泰式香料醃製酥炸，外酥內嫩香氣十足。',
+  '黃金咖哩雞': '黃咖哩以薑黃融合椰奶，齒頰留香。',
+  '醬烤沙嗲雞': 'Q彈雞腿肉搭配濃濃沙嗲醬，花生香滿溢讓人意猶未盡。',
+  '酥烤泰香雞(預訂菜)': '特選全雞以香茅、斑蘭葉醃製烘烤，整隻外酥肉嫩，沾上特調酸辣醬清爽不膩口。【需在一天前預訂】',
+  '椰香綠咖哩雞': '以椰漿燉煮的綠咖哩，風味香辣交織，是不敗的泰式家常料理。',
+  '清香檸檬魚': '肉質細嫩的新鮮鱸魚伴隨檸檬清香，紅遍世界的泰經典。【可做不辣】',
+  '蒜香金沙奶油蟹': '酥炸軟殼蟹淋上濃郁鹹蛋黃奶油醬，鍋中滋滋作響，蒜香撲鼻。',
+  '泰式鹹蛋中卷': '鹹蛋黃完美裹覆Q彈中卷，再拌炒泰式辣椒膏，鹹香好滋味！',
+  '羅望子龍眼蝦球': '酥炸蝦球融合羅望子醬與龍眼果香，酸甜交織外酥內彈！',
+  '檸香蒸扁鱈': '細緻扁鱈淋上特製檸檬魚露醬汁，酸香清爽，入口即化。【可做不辣】',
+  '濃香紅咖哩魚片': '鮮嫩魚片佐以濃郁紅咖哩醬汁，香辣下飯。',
+  '打拋炸蛋': '爆炒打拋豬加上流心炸半熟蛋，白飯再來三碗～',
+  '金湯椰香豆腐煲': '滑嫩豆腐與香甜南瓜融為一體，椰漿香氣濃郁，暖胃又滿足。',
+  '泰滑蝦扯蛋': '嫩滑的蛋液裹著鮮甜蝦仁、爆香洋蔥，口感柔嫩香氣四溢。',
+  '綠咖哩嫩炸豆腐': '滑嫩雞蛋豆腐燴入綠咖哩，不容錯過的饗泰多獨家料理。',
+  '泰香炒野蓮': '炒蛋爆香後快炒水蓮，加入魚露提味層次更豐富，清脆鹹香超夠味！',
+  '金沙滑蛋高麗菜': '高麗菜快炒後淋上金沙滑蛋，金黃蛋液柔滑流動，脆滑交織濃香入味。',
+  '泰炒什錦蔬菜': '清炒時蔬爽脆鮮甜。【可客製茹素餐點：植物五辛素(鍋邊素)】',
+  '蝦醬空心菜': '精煉蝦醬快炒特選空心菜。【可客製不辣/茹素餐點：植物五辛素(鍋邊素)】',
+  '泰北鄉村茄': '泰北人家獨有鄉村醬拌炒新鮮茄子，濃香入味口齒留香。',
+  '鮮蝦寬粉煲/小': '寬粉吸飽醬汁與大蝦精華，鮮香入味越嚼越香。【一份鮮蝦6隻】',
+  '鮮蝦寬粉煲/大': '寬粉吸飽醬汁與大蝦精華，鮮香入味越嚼越香。【一份鮮蝦8隻】',
+  '饗泰多泰炒河粉': '泰國經典平民美食，搭配份量十足的特選白蝦，鹹香海味UP！【可做蛋素(鍋邊素)/可另加辣】',
+  '小象炒飯': '小朋友的鳳梨蝦仁炒飯。',
+  '泰國香米飯/人': '吃泰菜當然要配香米飯。【外帶$25/碗】',
+  '冬蔭海鮮湯': '饗泰多特調酸辣湯汁搭配慢熬蝦高湯，各式海鮮菇類，標準山珍海味。',
+  '香茅椰肉蛤蜊雞湯': '香茅、椰肉與蛤蜊細細燉煮出的精華雞湯，鮮美輕甜有層次。',
+  '椰奶菇菇雞湯': '清香椰奶融合南薑與檸檬葉香氣，細火煨燉雞腿肉與綜合菇類，呈現濃醇柔和的南洋風味。',
+  '蝦仁玉米湯': '蝦仁丁、香菇、玉米和培根一同熬煮，奶油與蛋花香氣滿溢，小朋友的最愛～',
+  '(素)香茅椰肉野菇湯': '【素別：五辛素(鍋邊素)】',
+  '(素)清炒空心菜': '【素別：五辛素(鍋邊素)】',
+  '(素)清炒什錦蔬菜': '【素別：五辛素(鍋邊素)】',
+  '(素)清炒高麗菜': '【素別：五辛素(鍋邊素)】',
+  '(素)鮮菇玉米湯': '【素別：蛋奶素(鍋邊素)】',
+  '(素)蛋素青木瓜涼拌': '【素別：蛋素(鍋邊素)】',
+  '(素)蛋素什錦炒飯': '【素別：蛋素(鍋邊素)】',
+  '(素)蛋素炒河粉': '【素別：蛋素(鍋邊素)】',
+  '泰式奶茶(冰/熱)': '茶葉與奶香的完美比例，冰涼熟悉的味道讓人一秒飛到泰國。',
+  '泰多凍檸綠': '多到炸出來的檸檬片，與綠茶酸甜交織，沁爽又解膩。',
+  '檸檬茶': '檸檬汁加上綠茶就是清爽解渴。',
+  '荔枝冰茶啵啵': '荔枝果肉融入紅茶，甘甜順口，尾韻帶有淡淡斑蘭清香，搭配啵啵增添爽脆嚼感。',
+  '椰夏薄荷泡泡': '薄荷與椰子水交織出清涼氣泡，清爽解膩。',
+  '椰子汁': '饗泰多招牌椰子汁與香Q椰子果肉，一喝祛熱透心涼。',
+  '荔枝香芒泡泡': '以芒果泥與荔枝果肉特調漸層氣泡飲，冰冰涼涼，暢快過癮。',
+  '清香舒芙茶': '清新花草揉合薄荷與洋甘菊，茶香清新柔和。',
+  '穀香蕎麥茶': '蕎麥與國寶茶葉焙煮調和，入口穀香濃厚尾韻甘潤。',
+  '泰象啤酒': '帶有淡淡的麥芽香氣與微妙的果香，口感清爽順口。',
+  '勝獅啤酒': '泰國經典拉格啤酒，麥香清爽順口。',
+  '可樂': '經典暢快氣泡飲。',
+  '摩摩喳喳': '豐富果肉與配料的黃金比例，淋上濃郁香醇的椰漿，口感十足的招牌甜點！',
+  '椰香黑糯米(冰/熱)': '黑糯米加上濃郁椰漿、亞達子更添Q彈口感。',
+  '椰子冰淇淋': '香濃椰子冰淇淋搭配精選配料，清爽消暑。',
+  '厚泰奶布丁': '以泰式奶茶熬煮製成的滑順布丁，茶香濃郁、口感柔嫩。',
+  '椰香熱帶冰沙': '香蕉芒果椰奶冰沙，再加上一球椰子冰淇淋，彷彿置身熱帶島嶼！',
+  '雙醬金磚吐司': '厚切吐司烤至金黃微焦，搭配濃郁泰奶煉乳與香蘭葉醬，品嘗泰國超人氣經典。'
+};
+
+const OFFICIAL_SPICE_MAP = {
+  '爆爽辣炒牛': 3,
+  '椰香綠咖哩雞': 2,
+  '濃香紅咖哩魚片': 2,
+  '綠咖哩嫩炸豆腐': 2,
+  '打拋炸蛋': 2,
+  '冬蔭海鮮湯': 2,
+  '青檸酸辣海鮮湯': 2,
+  '泰味雲耳(小菜②)': 2,
+  '咔滋椒麻雞': 2,
+  '酸辣海鮮涼拌': 2,
+  '香煎瀑布牛涼拌': 1,
+  '現搗青木瓜涼拌': 1,
+  '泰式手撕雞涼拌': 1,
+  '酸辣蒜黃瓜(小菜③)': 1,
+  '泰味三拼(小菜3款)': 1,
+  '扒飯打拋豬': 1,
+  '清香檸檬魚': 1,
+  '檸香蒸扁鱈': 1,
+  '香料爐烤紙包魚': 1,
+  '黃咖哩軟殼蟹': 1,
+  '泰式鹹蛋中卷': 1,
+  '蝦醬空心菜': 1,
+  '泰北鄉村茄': 1,
+  '帕能咖哩雞': 1
+};
+
 function createSeedMenu() {
   const raw = [
     // 饗泰多TOP10
@@ -1313,7 +1517,8 @@ function createSeedMenu() {
     name: r[1],
     price: r[2],
     spiceType: r[3],
-    note: r[4],
+    spiceLevel: OFFICIAL_SPICE_MAP[r[1]] !== undefined ? OFFICIAL_SPICE_MAP[r[1]] : 0,
+    note: OFFICIAL_DESC_MAP[r[1]] || (r[4] === '不辣' ? '' : r[4]),
     image: '',
     availableDineIn: true,
     availableTakeout: true
@@ -1471,6 +1676,8 @@ let chartInstances = {
 function normalizeAvailability(list) {
   return list.map(item => ({
     ...item,
+    spiceLevel: item.spiceCustom ? item.spiceLevel : (OFFICIAL_SPICE_MAP[item.name] !== undefined ? OFFICIAL_SPICE_MAP[item.name] : (item.spiceLevel || 0)),
+    note: (!item.note || item.note === '不辣') ? (OFFICIAL_DESC_MAP[item.name] || '') : item.note,
     availableDineIn: item.availableDineIn !== undefined ? item.availableDineIn : (item.available !== undefined ? item.available : true),
     availableTakeout: item.availableTakeout !== undefined ? item.availableTakeout : (item.available !== undefined ? item.available : true)
   }));
@@ -1720,6 +1927,23 @@ function selectMenuCategory(cat) {
   renderCustomerMenu();
 }
 
+function cleanDishNoteForFrontend(note) {
+  if (!note || note === '不辣') return '';
+  return note
+    .replace(/【可做不辣】/g, '')
+    .replace(/【可做蛋素\/不辣】/g, '【可做蛋素】')
+    .replace(/【可客製不辣\/茹素餐點：植物五辛素\(鍋邊素\)】/g, '【可客製茹素餐點：植物五辛素(鍋邊素)】')
+    .replace(/可做不辣/g, '')
+    .trim();
+}
+
+function renderChiliIcons(level) {
+  const lv = parseInt(level || 0, 10);
+  if (lv <= 0) return '';
+  const title = lv === 1 ? '小辣' : lv === 2 ? '中辣' : '大辣';
+  return `<span class="inline-flex items-center gap-0.5 shrink-0" title="${title}">${'🌶️'.repeat(lv)}</span>`;
+}
+
 function renderCustomerMenu() {
   const q = (document.getElementById('menu-search-input').value || '').trim().toLowerCase();
   const grid = document.getElementById('menu-dishes-grid');
@@ -1773,13 +1997,11 @@ function renderCustomerMenu() {
       ${d.image ? `<img src="${d.image}" alt="${d.name}" class="w-full h-40 object-cover" onerror="this.style.display='none'" />` : ''}
       <div class="p-4 flex-1 flex flex-col justify-between gap-3">
         <div>
-          <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center justify-between gap-2">
             <h4 class="font-bold text-stone-900 text-base">${d.name}</h4>
-            <span class="text-[11px] px-2 py-0.5 rounded-full shrink-0 font-medium ${
-              d.spiceType === '可調辣' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-stone-100 text-stone-600'
-            }">${d.spiceType}</span>
+            ${renderChiliIcons(d.spiceLevel)}
           </div>
-          ${d.note ? `<p class="text-xs text-stone-500 mt-1">${d.note}</p>` : ''}
+          ${(() => { const clean = cleanDishNoteForFrontend(d.note); return clean ? `<p class=\"text-xs text-stone-500 mt-1\">${clean}</p>` : ''; })()}
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-stone-100">
           <span class="font-bold text-violet-950 text-base">NT$ ${d.price}</span>
@@ -1975,13 +2197,7 @@ function confirmAddSetToCart() {
 function handleAddDishClick(dishId) {
   const dish = state.menu.find(d => d.id === dishId);
   if (!dish || !isItemAvailableFor(dish, state.customerDraft.diningType)) return;
-  if (dish.spiceType === '可調辣') {
-    state.pendingSpiceDish = dish;
-    document.getElementById('modal-spice-title').textContent = `${dish.name} — 選擇辣度`;
-    document.getElementById('modal-spice').classList.remove('hidden');
-  } else {
-    addItemToCart(dish, '辣度固定');
-  }
+  addItemToCart(dish, '辣度固定');
 }
 
 function confirmAddSpice(spice) {
@@ -2136,14 +2352,31 @@ function runCustomerOrderLookup() {
     '已取消': 'bg-rose-100 text-rose-800'
   };
   body.innerHTML = matched.map(o => `
-    <div class="p-3.5 rounded-xl border border-stone-200 bg-stone-50 space-y-1.5">
+    <div class="p-4 rounded-xl border border-stone-200 bg-stone-50 space-y-2">
       <div class="flex items-center justify-between">
         <span class="font-bold text-violet-950">${o.id} · ${o.diningType}</span>
         <span class="px-2 py-0.5 rounded-full text-xs font-bold ${badgeColor[o.status] || 'bg-stone-200'}">${o.status}</span>
       </div>
       <div class="text-xs font-semibold text-amber-800">分店：${o.store || '饗泰多松高店'}</div>
-      <div class="text-xs text-stone-600">${o.date} ${o.timeSlot}（${o.mealPeriod}）｜ 總金額 NT$ ${o.total.toLocaleString()}</div>
-      <div class="text-xs text-stone-500">${o.items.map(i => `${i.name}×${i.qty}`).join('、')}</div>
+      <div class="text-xs text-stone-600">${o.date} ${o.timeSlot}（${o.mealPeriod}）｜ 貴賓：${o.customerName}</div>
+      ${o.note ? `<div class="text-xs text-stone-500">備註：${o.note}</div>` : ''}
+      <div class="pt-2 border-t border-stone-200 space-y-1.5">
+        <div class="text-[11px] font-bold text-stone-500 uppercase">預點菜色明細</div>
+        ${o.items.map(i => `
+          <div class="text-xs bg-white p-2 rounded-lg border border-stone-200/70">
+            <div class="flex justify-between font-semibold text-stone-800">
+              <span>${i.name} × ${i.qty}</span>
+              <span>NT$ ${(i.price * i.qty).toLocaleString()}</span>
+            </div>
+            ${i.isSet && Array.isArray(i.subItems) ? `<div class="text-[11px] text-stone-500 mt-1 leading-relaxed">內容：${i.subItems.map(s => `${s.name}×${s.qty}`).join('、')}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+      <div class="pt-2 border-t border-stone-200 text-xs space-y-0.5">
+        <div class="flex justify-between text-stone-500"><span>小計</span><span>NT$ ${o.subtotal.toLocaleString()}</span></div>
+        ${o.serviceFee > 0 ? `<div class="flex justify-between text-stone-500"><span>服務費 (10%)</span><span>NT$ ${o.serviceFee.toLocaleString()}</span></div>` : ''}
+        <div class="flex justify-between font-bold text-sm text-violet-950 pt-1"><span>總金額</span><span>NT$ ${o.total.toLocaleString()}</span></div>
+      </div>
     </div>
   `).join('');
 }
@@ -2254,8 +2487,9 @@ function updateStoreBranding() {
 function onStatsFilterChange() {
   const mode = document.getElementById('filter-date-mode').value;
   document.getElementById('filter-custom-date-wrap').classList.toggle('hidden', mode !== 'custom');
-  if (mode === 'custom' && !document.getElementById('filter-custom-date').value) {
-    document.getElementById('filter-custom-date').value = '2026-11-27';
+  if (mode === 'custom') {
+    if (!document.getElementById('filter-date-start').value) document.getElementById('filter-date-start').value = '2026-11-23';
+    if (!document.getElementById('filter-date-end').value) document.getElementById('filter-date-end').value = '2026-11-27';
   }
   renderAdminStats();
 }
@@ -2281,7 +2515,8 @@ function expandOrderDishItems(order) {
 
 function getFilteredOrders() {
   const dateMode = document.getElementById('filter-date-mode').value;
-  const customDate = document.getElementById('filter-custom-date').value;
+  const dateStart = document.getElementById('filter-date-start').value;
+  const dateEnd = document.getElementById('filter-date-end').value;
   const dining = document.getElementById('filter-dining').value;
   const period = document.getElementById('filter-period').value;
   const status = document.getElementById('filter-status').value;
@@ -2289,7 +2524,10 @@ function getFilteredOrders() {
   return state.orders.filter(o => {
     if (state.adminStoreFilter !== 'all' && o.store !== state.adminStoreFilter) return false;
     if (dateMode === 'today' && o.date !== '2026-11-27') return false;
-    if (dateMode === 'custom' && customDate && o.date !== customDate) return false;
+    if (dateMode === 'custom') {
+      if (dateStart && o.date < dateStart) return false;
+      if (dateEnd && o.date > dateEnd) return false;
+    }
     if (dining !== 'all' && o.diningType !== dining) return false;
     if (period !== 'all' && o.mealPeriod !== period) return false;
     if (status === 'active' && o.status === '已取消') return false;
@@ -2720,8 +2958,12 @@ function exportStatsCSV() {
 function renderAdminOrders() {
   renderAdminCalendar();
   const q = (document.getElementById('order-search-input').value || '').trim().toLowerCase();
+  const oStart = document.getElementById('order-filter-start').value;
+  const oEnd = document.getElementById('order-filter-end').value;
   const list = state.orders.filter(o => {
     if (state.adminStoreFilter !== 'all' && o.store !== state.adminStoreFilter) return false;
+    if (oStart && o.date < oStart) return false;
+    if (oEnd && o.date > oEnd) return false;
     if (state.calendarFilterDate && o.date !== state.calendarFilterDate) return false;
     if (q) {
       return o.customerName.toLowerCase().includes(q) || o.phone.includes(q) || o.id.toLowerCase().includes(q);
@@ -2807,6 +3049,123 @@ function renderAdminCalendar() {
 function selectCalendarDate(dateStr) {
   state.calendarFilterDate = state.calendarFilterDate === dateStr ? null : dateStr;
   renderAdminOrders();
+}
+
+function clearOrderDateRange() {
+  document.getElementById('order-filter-start').value = '';
+  document.getElementById('order-filter-end').value = '';
+  renderAdminOrders();
+}
+
+let creatingOrderItems = [];
+
+function openCreateOrderModal() {
+  creatingOrderItems = [];
+  const storeSel = document.getElementById('create-order-store');
+  storeSel.innerHTML = STORES.map(s => `<option value="${s}">${s}</option>`).join('');
+  if (state.adminStoreFilter !== 'all') storeSel.value = state.adminStoreFilter;
+
+  document.getElementById('create-order-dining').value = '內用';
+  document.getElementById('create-order-date').value = '2026-11-27';
+  document.getElementById('create-order-status').value = '待確認';
+  document.getElementById('create-order-name').value = '';
+  document.getElementById('create-order-phone').value = '';
+  document.getElementById('create-order-note').value = '';
+  onCreateOrderDiningChange();
+
+  const dishSel = document.getElementById('create-order-dish-select');
+  dishSel.innerHTML = state.menu.map(d => `<option value="${d.id}">${d.name} (NT$ ${d.price})</option>`).join('');
+  renderCreatingOrderItems();
+  document.getElementById('modal-create-order').classList.remove('hidden');
+}
+
+function onCreateOrderDiningChange() {
+  const dining = document.getElementById('create-order-dining').value;
+  const slots = dining === '內用'
+    ? [...DINEIN_LUNCH_SLOTS, ...DINEIN_DINNER_SLOTS]
+    : [...TAKEOUT_LUNCH_SLOTS, ...TAKEOUT_DINNER_SLOTS];
+  document.getElementById('create-order-slot').innerHTML = slots.map(s => `<option value="${s}">${s}</option>`).join('');
+  renderCreatingOrderItems();
+}
+
+function addDishToCreatingOrder() {
+  const dishId = document.getElementById('create-order-dish-select').value;
+  const dish = state.menu.find(d => d.id === dishId);
+  if (!dish) return;
+  const existing = creatingOrderItems.find(i => i.name === dish.name);
+  if (existing) existing.qty += 1;
+  else creatingOrderItems.push({ dishId: dish.id, name: dish.name, category: dish.category, price: dish.price, qty: 1, spice: '辣度固定' });
+  renderCreatingOrderItems();
+}
+
+function changeCreatingItemQty(idx, delta) {
+  const it = creatingOrderItems[idx];
+  if (!it) return;
+  it.qty += delta;
+  if (it.qty <= 0) creatingOrderItems.splice(idx, 1);
+  renderCreatingOrderItems();
+}
+
+function renderCreatingOrderItems() {
+  const container = document.getElementById('create-order-items');
+  if (creatingOrderItems.length === 0) {
+    container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">尚未加入任何菜色</p>`;
+  } else {
+    container.innerHTML = creatingOrderItems.map((it, idx) => `
+      <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+        <div>
+          <span class="text-sm font-semibold text-slate-800">${it.name}</span>
+          <span class="text-xs text-slate-500 ml-1">NT$ ${it.price}</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="changeCreatingItemQty(${idx}, -1)" class="w-6 h-6 rounded bg-white border border-slate-300 text-xs font-bold">-</button>
+          <span class="w-5 text-center text-xs font-bold">${it.qty}</span>
+          <button type="button" onclick="changeCreatingItemQty(${idx}, 1)" class="w-6 h-6 rounded bg-white border border-slate-300 text-xs font-bold">+</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  const dining = document.getElementById('create-order-dining').value;
+  const totals = buildOrderTotals(creatingOrderItems, dining);
+  document.getElementById('create-order-total-preview').textContent = `TOTAL: NT$ ${totals.total.toLocaleString()}`;
+}
+
+function saveCreatedOrder() {
+  const name = document.getElementById('create-order-name').value.trim();
+  const phone = document.getElementById('create-order-phone').value.trim();
+  if (!name || !phone || creatingOrderItems.length === 0) {
+    showToast('請填寫顧客姓名、電話並至少加入一道菜色', 'error');
+    return;
+  }
+  const store = document.getElementById('create-order-store').value;
+  const diningType = document.getElementById('create-order-dining').value;
+  const date = document.getElementById('create-order-date').value;
+  const timeSlot = document.getElementById('create-order-slot').value;
+  const status = document.getElementById('create-order-status').value;
+  const note = document.getElementById('create-order-note').value.trim();
+  const totals = buildOrderTotals(creatingOrderItems, diningType);
+
+  const newOrder = {
+    id: 'SM' + Date.now().toString().slice(-8),
+    store,
+    diningType,
+    date,
+    timeSlot,
+    mealPeriod: LUNCH_SLOTS.includes(timeSlot) ? '午餐' : '晚餐',
+    customerName: name,
+    phone,
+    note,
+    status,
+    createdAt: new Date().toISOString(),
+    items: creatingOrderItems.map(it => ({ ...it })),
+    ...totals
+  };
+
+  state.orders.unshift(newOrder);
+  safeSet(STORAGE_KEYS.ORDERS, state.orders);
+  closeModal('modal-create-order');
+  renderAdminOrders();
+  showToast(`已新增訂單 ${newOrder.id}`);
 }
 
 function clearCalendarDateFilter() {
@@ -3003,7 +3362,7 @@ function renderAdminMenuTable() {
       </td>
       <td class="px-4 py-3 font-semibold text-slate-800">${d.name}</td>
       <td class="px-4 py-3 text-xs text-slate-500">${d.category}</td>
-      <td class="px-4 py-3 text-xs">${d.spiceType}</td>
+      <td class="px-4 py-3 text-xs">${renderChiliIcons(d.spiceLevel) || "不辣"}</td>
       <td class="px-4 py-3 text-right font-bold text-slate-900">NT$ ${d.price}</td>
       <td class="px-4 py-3 text-center">
         <button type="button" onclick="toggleDishAvailability('${d.id}', 'dinein')"
@@ -3148,7 +3507,7 @@ function openAddDishModal() {
   catSel.innerHTML = CATEGORIES.filter(c => c !== '套餐組合').map(c => `<option value="${c}">${c}</option>`).join('');
   document.getElementById('dish-form-name').value = '';
   document.getElementById('dish-form-price').value = '';
-  document.getElementById('dish-form-spice').value = '辣度固定';
+  document.getElementById('dish-form-spice-level').value = '0';
   document.getElementById('dish-form-note').value = '';
   document.getElementById('dish-form-img-url').value = '';
   document.getElementById('dish-form-file').value = '';
@@ -3167,7 +3526,7 @@ function openEditDishModal(id) {
   catSel.value = d.category;
   document.getElementById('dish-form-name').value = d.name;
   document.getElementById('dish-form-price').value = d.price;
-  document.getElementById('dish-form-spice').value = d.spiceType;
+  document.getElementById('dish-form-spice-level').value = String(d.spiceLevel || 0);
   document.getElementById('dish-form-note').value = d.note || '';
   document.getElementById('dish-form-img-url').value = (d.image && d.image.startsWith('http')) ? d.image : '';
   document.getElementById('dish-form-file').value = '';
@@ -3179,7 +3538,7 @@ function saveDishForm() {
   const name = document.getElementById('dish-form-name').value.trim();
   const category = document.getElementById('dish-form-cat').value;
   const price = parseInt(document.getElementById('dish-form-price').value, 10);
-  const spiceType = document.getElementById('dish-form-spice').value;
+  const spiceLevel = parseInt(document.getElementById('dish-form-spice-level').value, 10) || 0;
   const note = document.getElementById('dish-form-note').value.trim();
 
   if (!name || isNaN(price) || price <= 0) {
@@ -3193,7 +3552,8 @@ function saveDishForm() {
       d.name = name;
       d.category = category;
       d.price = price;
-      d.spiceType = spiceType;
+      d.spiceLevel = spiceLevel;
+      d.spiceCustom = true;
       d.note = note;
       d.image = state.dishFormImage || '';
     }
@@ -3204,7 +3564,8 @@ function saveDishForm() {
       category,
       name,
       price,
-      spiceType,
+      spiceType: '辣度固定',
+      spiceLevel,
       note,
       image: state.dishFormImage || '',
       availableDineIn: true,
