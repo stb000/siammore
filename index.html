@@ -139,8 +139,15 @@
 
         <div class="mb-6">
           <label for="cust-date" class="block text-sm font-semibold text-stone-700 mb-2">日期</label>
-          <input id="cust-date" type="date" onchange="renderCustomerTimeSlots()"
-            class="w-full px-4 py-3 rounded-xl border border-stone-300 focus:ring-2 focus:ring-violet-600 focus:border-violet-600 outline-none text-stone-800 font-medium" />
+          <select id="cust-date" onchange="renderCustomerTimeSlots()"
+            class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-white focus:ring-2 focus:ring-violet-600 focus:border-violet-600 outline-none text-stone-800 font-semibold">
+            <option value="2027-02-05">2027/02/05 (五)</option>
+            <option value="2027-02-06">2027/02/06 (六)</option>
+            <option value="2027-02-07">2027/02/07 (日)</option>
+            <option value="2027-02-08">2027/02/08 (一)</option>
+            <option value="2027-02-09">2027/02/09 (二)</option>
+            <option value="2027-02-10">2027/02/10 (三)</option>
+          </select>
         </div>
 
         <div class="space-y-5 mb-8">
@@ -236,6 +243,12 @@
               </button>
             </div>
 
+            <!-- CNY Rule Banner -->
+            <div id="cny-rule-banner" class="mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs sm:text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
+              <span>※ 春節期間限點選任一「春節多人套餐」，方能進行單點加點。</span>
+              <span id="cny-guest-req-badge" class="shrink-0 px-2.5 py-0.5 rounded-full bg-amber-200/80 text-amber-950 text-xs font-bold"></span>
+            </div>
+
             <!-- Category Tabs -->
             <div id="menu-category-tabs" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4"></div>
 
@@ -269,6 +282,9 @@
               </button>
             </div>
 
+            <!-- Min Spend Status ($600 / person for Dine-In) -->
+            <div id="cart-minspend-box" class="hidden mb-3 px-3 py-2 rounded-xl text-xs font-semibold border"></div>
+
             <!-- Totals -->
             <div class="space-y-1.5 text-sm border-t border-stone-200 pt-3 mb-4">
               <div class="flex justify-between text-stone-600">
@@ -301,9 +317,9 @@
           </button>
         </div>
 
-        <!-- Official Dining Notice -->
+        <!-- Official CNY Dining Notice -->
         <div id="menu-footer-notice" class="mt-6 bg-white/90 border border-stone-200 rounded-2xl p-4 text-center text-xs text-stone-500 space-y-1">
-          <p>內用需加收10%服務費，每人最低消費400元。</p>
+          <p class="font-semibold text-violet-950">春節期間本店需加收10%服務費，每人最低消費600元。</p>
           <p>6歲(含)以上兒童，需計算1人份白飯費用。</p>
           <p class="font-semibold text-stone-600 pt-0.5">※ 禁止酒駕 飲酒過量 有害健康</p>
         </div>
@@ -462,19 +478,19 @@
               <select id="filter-date-mode" onchange="onStatsFilterChange()"
                 class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:ring-2 focus:ring-violet-600 outline-none">
                 <option value="all">全部日期</option>
-                <option value="today">今日 (2026-11-27)</option>
+                <option value="today">春節初一 (2027-02-06)</option>
                 <option value="custom">指定日期區間</option>
               </select>
             </div>
             <div id="filter-custom-date-wrap" class="hidden sm:col-span-2 lg:col-span-2 grid grid-cols-2 gap-2">
               <div>
                 <label for="filter-date-start" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">開始日期</label>
-                <input id="filter-date-start" type="date" onchange="renderAdminStats()"
+                <input id="filter-date-start" type="date" min="2027-02-05" max="2027-02-10" onchange="renderAdminStats()"
                   class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 outline-none" />
               </div>
               <div>
                 <label for="filter-date-end" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">結束日期</label>
-                <input id="filter-date-end" type="date" onchange="renderAdminStats()"
+                <input id="filter-date-end" type="date" min="2027-02-05" max="2027-02-10" onchange="renderAdminStats()"
                   class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 outline-none" />
               </div>
             </div>
@@ -687,9 +703,9 @@
             <div class="flex flex-wrap items-center gap-2">
               <div class="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs">
                 <span class="text-slate-500 font-semibold">日期區間</span>
-                <input id="order-filter-start" type="date" onchange="renderAdminOrders()" class="outline-none text-slate-700" />
+                <input id="order-filter-start" type="date" min="2027-02-05" max="2027-02-10" onchange="renderAdminOrders()" class="outline-none text-slate-700" />
                 <span class="text-slate-400">~</span>
-                <input id="order-filter-end" type="date" onchange="renderAdminOrders()" class="outline-none text-slate-700" />
+                <input id="order-filter-end" type="date" min="2027-02-05" max="2027-02-10" onchange="renderAdminOrders()" class="outline-none text-slate-700" />
                 <button type="button" onclick="clearOrderDateRange()" class="text-violet-700 font-semibold hover:underline ml-1">清除</button>
               </div>
               <input id="order-search-input" type="text" oninput="renderAdminOrders()" placeholder="搜尋姓名、電話或訂單編號..."
@@ -705,7 +721,7 @@
           <!-- Calendar View -->
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
             <div class="flex items-center justify-between mb-4">
-              <h3 id="calendar-month-title" class="font-bold text-slate-800">2026年 11月 訂位／預點月曆</h3>
+              <h3 id="calendar-month-title" class="font-bold text-slate-800">2027年 2月 春節訂位／預點月曆</h3>
               <div class="flex items-center gap-3 text-xs">
                 <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-violet-700"></span> 內用</span>
                 <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 外帶</span>
@@ -977,7 +993,14 @@
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-500 mb-1">日期</label>
-            <input id="create-order-date" type="date" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+            <select id="create-order-date" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white">
+            <option value="2027-02-05">2027/02/05 (五)</option>
+            <option value="2027-02-06">2027/02/06 (六)</option>
+            <option value="2027-02-07">2027/02/07 (日)</option>
+            <option value="2027-02-08">2027/02/08 (一)</option>
+            <option value="2027-02-09">2027/02/09 (二)</option>
+            <option value="2027-02-10">2027/02/10 (三)</option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-500 mb-1">時段</label>
@@ -1049,7 +1072,14 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-500 mb-1">日期</label>
-            <input id="edit-order-date" type="date" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm" />
+            <select id="edit-order-date" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white">
+            <option value="2027-02-05">2027/02/05 (五)</option>
+            <option value="2027-02-06">2027/02/06 (六)</option>
+            <option value="2027-02-07">2027/02/07 (日)</option>
+            <option value="2027-02-08">2027/02/08 (一)</option>
+            <option value="2027-02-09">2027/02/09 (二)</option>
+            <option value="2027-02-10">2027/02/10 (三)</option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-500 mb-1">時段</label>
@@ -1112,7 +1142,7 @@
     <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl fade-in max-h-[90vh] flex flex-col">
       <div class="flex items-start justify-between pb-3 border-b border-stone-200 mb-4">
         <div>
-          <h3 id="set-config-title" class="text-xl font-bold text-violet-950">【二人套餐】</h3>
+          <h3 id="set-config-title" class="text-xl font-bold text-violet-950">春節兩人套餐</h3>
           <p id="set-config-subtitle" class="text-xs text-stone-500 mt-0.5"></p>
         </div>
         <button type="button" onclick="closeModal('modal-set-config')" class="text-stone-400 hover:text-stone-600">
@@ -1249,10 +1279,10 @@
 <script>
 // ==================== CONSTANTS & INITIAL SEED DATA ====================
 const STORAGE_KEYS = {
-  ORDERS: 'siammore_orders_v1',
-  MENU: 'siammore_menu_v1',
-  SETS: 'siammore_sets_v1',
-  UPSELL: 'siammore_upsell_v1',
+  ORDERS: 'siammore_orders_2027cny_v1',
+  MENU: 'siammore_menu_2027cny_v1',
+  SETS: 'siammore_sets_2027cny_v1',
+  UPSELL: 'siammore_upsell_2027cny_v1',
   AUTH: 'siammore_auth_v1'
 };
 
@@ -1273,102 +1303,9 @@ const DINNER_SLOTS = [...DINEIN_DINNER_SLOTS, ...TAKEOUT_DINNER_SLOTS];
 const TIME_SLOTS = [...DINEIN_LUNCH_SLOTS, ...DINEIN_DINNER_SLOTS, ...TAKEOUT_LUNCH_SLOTS, ...TAKEOUT_DINNER_SLOTS];
 
 const CATEGORIES = [
-  '套餐組合', '饗泰多TOP10', '夏季新菜', '開胃涼拌', '牛香四溢', '厚實好豬',
-  '鮮嫩多雞', '大口吃海鮮', '下飯豆腐蛋', '一點都不青菜', '吃飽來點',
-  '暖胃好湯', '有點甜', '來杯泰飲', '來點蔬食'
+  '春節多人套餐', '涼拌', '牛肉', '豬肉', '雞肉', '蛋豆腐',
+  '海鮮', '青菜', '湯品', '素食', '主食', '甜點', '飲料'
 ];
-
-function createSeedSets() {
-  return [
-    {
-      id: 'set_2', people: 2, name: '【二人套餐】', summary: '4菜．2飲料．泰國香米飯2人', price: 1490, availableDineIn: true, availableTakeout: true, image: '',
-      fixed: ['冠軍月亮蝦餅', '泰式手撕雞涼拌', '泰國香米飯(2人份)'],
-      groups: [
-        { key: 'meat', title: '肉類', pickCount: 1, options: ['扒飯打拋豬', '咔滋椒麻雞', '蠔氣爆炒牛', '帕能咖哩雞'] },
-        { key: 'veg', title: '青菜', pickCount: 1, options: ['蝦醬空心菜', '泰炒什錦蔬菜', '泰香炒野蓮'] },
-        { key: 'drink', title: '飲料', pickCount: 2, options: ['泰式奶茶(冰/熱)', '檸檬茶', '穀香蕎麥茶', '清香舒芙茶'] }
-      ],
-      addons: [
-        { name: '摩摩喳喳', price: 59 },
-        { name: '椰香黑糯米(冷/熱)', price: 59 },
-        { name: '厚泰奶布丁', price: 59 },
-        { name: '金沙椰椰冰淇淋', price: 59 },
-        { name: '秘醬炙烤肋排', price: 550 },
-        { name: '蒜酥松阪蝦醬拌飯', price: 360 }
-      ]
-    },
-    {
-      id: 'set_4', people: 4, name: '【四人套餐】', summary: '6菜．1湯．4飲料．4甜點．泰國香米飯4人', price: 2990, availableDineIn: true, availableTakeout: true, image: '',
-      fixed: ['冠軍月亮蝦餅', '泰式手撕雞涼拌', '泰國香米飯(4人份)'],
-      groups: [
-        { key: 'meat', title: '肉類', pickCount: 2, options: ['扒飯打拋豬', '咔滋椒麻雞', '蠔氣爆炒牛', '帕能咖哩雞'] },
-        { key: 'egg', title: '蛋豆腐', pickCount: 1, options: ['綠咖哩嫩炸豆腐', '打拋炸蛋', '泰滑蝦扯蛋'] },
-        { key: 'veg', title: '青菜', pickCount: 1, options: ['蝦醬空心菜', '泰炒什錦蔬菜', '泰香炒野蓮'] },
-        { key: 'soup', title: '湯品', pickCount: 1, options: ['蝦仁玉米湯', '香茅椰肉蛤蜊雞湯', '青檸酸辣海鮮湯'] },
-        { key: 'drink', title: '飲料', pickCount: 4, options: ['泰式奶茶(冰/熱)', '檸檬茶', '穀香蕎麥茶', '清香舒芙茶'] },
-        { key: 'dessert', title: '甜點', pickCount: 4, options: ['厚泰奶布丁', '摩摩喳喳', '椰香黑糯米(冷/熱)', '金沙椰椰冰淇淋'] }
-      ],
-      addons: [
-        { name: '秘醬炙烤肋排', price: 550 },
-        { name: '蒜酥松阪蝦醬拌飯', price: 360 }
-      ]
-    },
-    {
-      id: 'set_6', people: 6, name: '【六人套餐】', summary: '8菜．1湯．6飲料．6甜點．泰國香米飯6人', price: 4480, availableDineIn: true, availableTakeout: true, image: '',
-      fixed: ['冠軍月亮蝦餅', '黃咖哩軟殼蟹', '泰國香米飯(6人份)'],
-      groups: [
-        { key: 'salad', title: '涼拌', pickCount: 1, options: ['香煎瀑布牛涼拌', '泰式手撕雞涼拌', '酸辣海鮮涼拌'] },
-        { key: 'meat', title: '肉類', pickCount: 2, options: ['扒飯打拋豬', '咔滋椒麻雞', '蠔氣爆炒牛', '帕能咖哩雞'] },
-        { key: 'seafood', title: '海鮮', pickCount: 1, options: ['清香檸檬魚', '香料爐烤紙包魚'] },
-        { key: 'egg', title: '蛋豆腐', pickCount: 1, options: ['厚煎海鮮烘蛋', '打拋炸蛋', '泰滑蝦扯蛋'] },
-        { key: 'veg', title: '青菜', pickCount: 1, options: ['蝦醬空心菜', '泰炒什錦蔬菜', '泰香炒野蓮'] },
-        { key: 'soup', title: '湯品', pickCount: 1, options: ['蝦仁玉米湯', '香茅椰肉蛤蜊雞湯', '青檸酸辣海鮮湯'] },
-        { key: 'drink', title: '飲料', pickCount: 6, options: ['泰式奶茶(冰/熱)', '檸檬茶', '穀香蕎麥茶', '清香舒芙茶'] },
-        { key: 'dessert', title: '甜點', pickCount: 6, options: ['厚泰奶布丁', '摩摩喳喳', '椰香黑糯米(冷/熱)', '金沙椰椰冰淇淋'] }
-      ],
-      addons: [
-        { name: '秘醬炙烤肋排', price: 550 },
-        { name: '蒜酥松阪蝦醬拌飯', price: 360 }
-      ]
-    },
-    {
-      id: 'set_8', people: 8, name: '【八人套餐】', summary: '11菜．1湯．8飲料．8甜點．泰國香米飯8人', price: 5980, availableDineIn: true, availableTakeout: true, image: '',
-      fixed: ['泰味三拼', '冠軍月亮蝦餅', '黃咖哩軟殼蟹', '秘醬炙烤肋排(10塊)', '泰國香米飯(8人份)'],
-      groups: [
-        { key: 'salad', title: '涼拌', pickCount: 1, options: ['香煎瀑布牛涼拌', '泰式手撕雞涼拌', '酸辣海鮮涼拌'] },
-        { key: 'meat', title: '肉類', pickCount: 2, options: ['扒飯打拋豬', '咔滋椒麻雞', '蠔氣爆炒牛', '帕能咖哩雞'] },
-        { key: 'seafood', title: '海鮮', pickCount: 1, options: ['清香檸檬魚', '香料爐烤紙包魚', '檸香蒸扁鱈'] },
-        { key: 'egg', title: '蛋豆腐', pickCount: 1, options: ['厚煎海鮮烘蛋', '打拋炸蛋', '泰滑蝦扯蛋'] },
-        { key: 'veg', title: '青菜', pickCount: 2, options: ['蝦醬空心菜', '泰炒什錦蔬菜', '泰北鄉村茄', '泰香炒野蓮'] },
-        { key: 'soup', title: '湯品', pickCount: 1, options: ['蝦仁玉米湯', '香茅椰肉蛤蜊雞湯', '青檸酸辣海鮮湯'] },
-        { key: 'drink', title: '飲料', pickCount: 8, options: ['泰式奶茶(冰/熱)', '檸檬茶', '穀香蕎麥茶', '清香舒芙茶'] },
-        { key: 'dessert', title: '甜點', pickCount: 8, options: ['厚泰奶布丁', '摩摩喳喳', '椰香黑糯米(冷/熱)', '金沙椰椰冰淇淋'] }
-      ],
-      addons: [
-        { name: '秘醬炙烤肋排', price: 550 },
-        { name: '蒜酥松阪蝦醬拌飯', price: 360 }
-      ]
-    },
-    {
-      id: 'set_10', people: 10, name: '【十人套餐】', summary: '11菜．2湯．10飲料．10甜點．泰國香米飯10人', price: 7480, availableDineIn: true, availableTakeout: true, image: '',
-      fixed: ['泰味三拼', '黃咖哩軟殼蟹', '冠軍月亮蝦餅(大)', '秘醬炙烤肋排(12塊)', '泰國香米飯(10人份)'],
-      groups: [
-        { key: 'salad', title: '涼拌', pickCount: 1, options: ['香煎瀑布牛涼拌', '泰式手撕雞涼拌', '酸辣海鮮涼拌'] },
-        { key: 'meat', title: '肉類', pickCount: 2, options: ['扒飯打拋豬', '香烤松阪豬', '蠔氣爆炒牛', '帕能咖哩雞'] },
-        { key: 'seafood', title: '海鮮', pickCount: 1, options: ['清香檸檬魚', '泰式鹹蛋中卷', '香料爐烤紙包魚'] },
-        { key: 'egg', title: '蛋豆腐', pickCount: 1, options: ['厚煎海鮮烘蛋', '打拋炸蛋', '泰滑蝦扯蛋'] },
-        { key: 'veg', title: '青菜', pickCount: 2, options: ['泰北鄉村茄', '蝦醬空心菜(大)', '泰炒什錦蔬菜(大)', '泰香炒野蓮(大)'] },
-        { key: 'soup', title: '湯品', pickCount: 2, options: ['蝦仁玉米湯', '香茅椰肉蛤蜊雞湯', '青檸酸辣海鮮湯'] },
-        { key: 'drink', title: '飲料', pickCount: 10, options: ['泰式奶茶(冰/熱)', '檸檬茶', '穀香蕎麥茶', '清香舒芙茶'] },
-        { key: 'dessert', title: '甜點', pickCount: 10, options: ['厚泰奶布丁', '摩摩喳喳', '椰香黑糯米(冷/熱)', '金沙椰椰冰淇淋'] }
-      ],
-      addons: [
-        { name: '秘醬炙烤肋排', price: 550 },
-        { name: '蒜酥松阪蝦醬拌飯', price: 360 }
-      ]
-    }
-  ];
-}
 
 const DEFAULT_AUTH = {
   email: 'admin@siammore.com.tw',
@@ -1376,227 +1313,158 @@ const DEFAULT_AUTH = {
   storeName: '饗泰多松高店'
 };
 
+const OFFICIAL_SPICE_MAP = {
+  '香煎瀑布牛涼拌': 1,
+  '香煎瀑布牛涼拌(大)': 1,
+  '酸辣海鮮涼拌': 2,
+  '酸辣海鮮涼拌(大)': 2,
+  '現搗青木瓜涼拌': 1,
+  '瑪莎曼燉牛肉': 1,
+  '爆爽辣炒牛': 2,
+  '扒飯打拋豬': 2,
+  '咔滋椒麻雞': 2,
+  '帕能咖哩雞': 1,
+  '黃咖哩軟殼蟹': 1,
+  '清香檸檬魚': 1,
+  '檸香蒸扁鱈': 2,
+  '檸香酸辣小卷': 1,
+  '冬蔭海鮮湯': 2,
+  '青檸酸辣海鮮湯': 2
+};
 
 const OFFICIAL_DESC_MAP = {
-  '冠軍月亮蝦餅': '使用鮮甜草蝦與白蝦手打成型，2cm的厚實Q彈搭配清甜梅子醬美味再升級！',
-  '蒜酥松坂蝦醬拌飯': '蝦醬拌飯清新鹹香，搭配外酥內嫩的松阪豬與金黃蒜酥，展現豐富口感與香氣層次。',
-  '香料爐烤紙包魚': '利用紙封烘烤鎖住鮮魚與香料精華，魚肉細嫩多汁，搭配特製酸辣醬汁，香氣層層堆疊。',
-  '黃咖哩軟殼蟹': '香酥軟殼蟹拌入雞蛋黃與黃咖哩爆炒的濃郁醬汁，香濃滑順蟹香四溢。【可做不辣】',
-  '青檸酸辣海鮮湯': '以酸辣清湯為基底，融合南薑、香茅與檸檬葉燉煮海鮮與菇類，加入蝦膏風味鮮明。',
-  '咔滋椒麻雞': '酥脆多汁的現炸雞腿排淋上酸甜醬汁，香麻藤椒油更是神來一筆。【可做不辣】',
-  '帕能咖哩雞': '以椰奶為基底的經典咖哩—融合花生與香料的醇厚氣息，醬汁濃稠滑順，包裹嫩雞片，單吃、拌飯都美味！',
-  '楓糖炙烤子排': '豬肋排以香茅蒸煮提香，蜜製燒烤醬炙烤至色澤油亮，肉質飽滿多汁。搭配清爽花椰泡菜，風味更顯層次。',
-  '厚煎海鮮烘蛋': '超浮誇2cm厚烘蛋，每一口都吃得到滿滿蝦仁與海鮮。',
-  '香煎瀑布牛涼拌': '特選牛肉切片搭配新鮮蔬菜與香料，大滿足的肉食開胃菜。【可做不辣】',
-  '酸辣海鮮涼拌': '澎湃海鮮與鮮甜蔬菜拌入爽口醬汁，酸辣又涮嘴的道地泰味。',
-  '現搗青木瓜涼拌': '傳承東北道地鹹香風味，加上鹹蛋豐富了青木瓜的味覺層次。【可做蛋素/不辣】',
-  '泰式手撕雞涼拌': '鹽焗手撕雞搭配各式蔬菜拌入泰式酸甜醬汁，爽口涮嘴又開胃！【可做不辣】',
-  '泰味三拼(小菜3款)': '集結三種風味小菜（花椰菜、泰味雲耳、酸辣蒜黃瓜），品嚐泰式酸辣鮮香。',
-  '泰味雲耳(小菜②)': '黑木耳搭配青木瓜絲與辣醬，酸辣脆口有層次！',
-  '蒜蝦拌花椰(小菜①)': '蝦醬的鮮香與蒜味花椰菜，鹹鮮風味滿溢。',
-  '酸辣蒜黃瓜(小菜③)': '蒜味小黃瓜搭配自製辣醬與白醋，酸甜平衡、脆爽清新。',
-  '東北淚之虎': '火烤鮮嫩牛排、外焦香內多汁，搭配酸甜烤肉醬，難怪老虎吃不到會想哭！',
-  '爆爽辣炒牛': '鮮嫩牛肉爆炒綠胡椒和蠔油魚露，收汁起鍋泰味滿點！',
-  '蠔氣爆炒牛': '爆炒牛肉結合蠔油與九層塔，鹹香濃厚蠔下飯！',
-  '扒飯打拋豬': '肥二瘦八的黃金比例豬絞肉大火爆炒逼出羅勒清香，不可錯過的白飯殺手！【可做不辣】',
-  '香烤松阪豬': '使用上選豬頸肉，恰恰好的粉紅色，恰恰好吃！',
-  '泰炸香料豬': '嚴選豬肉以泰式香料醃製酥炸，外酥內嫩香氣十足。',
-  '黃金咖哩雞': '黃咖哩以薑黃融合椰奶，齒頰留香。',
-  '醬烤沙嗲雞': 'Q彈雞腿肉搭配濃濃沙嗲醬，花生香滿溢讓人意猶未盡。',
-  '酥烤泰香雞(預訂菜)': '特選全雞以香茅、斑蘭葉醃製烘烤，整隻外酥肉嫩，沾上特調酸辣醬清爽不膩口。【需在一天前預訂】',
-  '椰香綠咖哩雞': '以椰漿燉煮的綠咖哩，風味香辣交織，是不敗的泰式家常料理。',
-  '清香檸檬魚': '肉質細嫩的新鮮鱸魚伴隨檸檬清香，紅遍世界的泰經典。【可做不辣】',
-  '蒜香金沙奶油蟹': '酥炸軟殼蟹淋上濃郁鹹蛋黃奶油醬，鍋中滋滋作響，蒜香撲鼻。',
-  '泰式鹹蛋中卷': '鹹蛋黃完美裹覆Q彈中卷，再拌炒泰式辣椒膏，鹹香好滋味！',
-  '羅望子龍眼蝦球': '酥炸蝦球融合羅望子醬與龍眼果香，酸甜交織外酥內彈！',
-  '檸香蒸扁鱈': '細緻扁鱈淋上特製檸檬魚露醬汁，酸香清爽，入口即化。【可做不辣】',
-  '濃香紅咖哩魚片': '鮮嫩魚片佐以濃郁紅咖哩醬汁，香辣下飯。',
-  '打拋炸蛋': '爆炒打拋豬加上流心炸半熟蛋，白飯再來三碗～',
-  '金湯椰香豆腐煲': '滑嫩豆腐與香甜南瓜融為一體，椰漿香氣濃郁，暖胃又滿足。',
-  '泰滑蝦扯蛋': '嫩滑的蛋液裹著鮮甜蝦仁、爆香洋蔥，口感柔嫩香氣四溢。',
-  '綠咖哩嫩炸豆腐': '滑嫩雞蛋豆腐燴入綠咖哩，不容錯過的饗泰多獨家料理。',
-  '泰香炒野蓮': '炒蛋爆香後快炒水蓮，加入魚露提味層次更豐富，清脆鹹香超夠味！',
-  '金沙滑蛋高麗菜': '高麗菜快炒後淋上金沙滑蛋，金黃蛋液柔滑流動，脆滑交織濃香入味。',
-  '泰炒什錦蔬菜': '清炒時蔬爽脆鮮甜。【可客製茹素餐點：植物五辛素(鍋邊素)】',
-  '蝦醬空心菜': '精煉蝦醬快炒特選空心菜。【可客製不辣/茹素餐點：植物五辛素(鍋邊素)】',
-  '泰北鄉村茄': '泰北人家獨有鄉村醬拌炒新鮮茄子，濃香入味口齒留香。',
-  '鮮蝦寬粉煲/小': '寬粉吸飽醬汁與大蝦精華，鮮香入味越嚼越香。【一份鮮蝦6隻】',
-  '鮮蝦寬粉煲/大': '寬粉吸飽醬汁與大蝦精華，鮮香入味越嚼越香。【一份鮮蝦8隻】',
-  '饗泰多泰炒河粉': '泰國經典平民美食，搭配份量十足的特選白蝦，鹹香海味UP！【可做蛋素(鍋邊素)/可另加辣】',
-  '小象炒飯': '小朋友的鳳梨蝦仁炒飯。',
-  '泰國香米飯/人': '吃泰菜當然要配香米飯。【外帶$25/碗】',
-  '冬蔭海鮮湯': '饗泰多特調酸辣湯汁搭配慢熬蝦高湯，各式海鮮菇類，標準山珍海味。',
-  '香茅椰肉蛤蜊雞湯': '香茅、椰肉與蛤蜊細細燉煮出的精華雞湯，鮮美輕甜有層次。',
-  '椰奶菇菇雞湯': '清香椰奶融合南薑與檸檬葉香氣，細火煨燉雞腿肉與綜合菇類，呈現濃醇柔和的南洋風味。',
-  '蝦仁玉米湯': '蝦仁丁、香菇、玉米和培根一同熬煮，奶油與蛋花香氣滿溢，小朋友的最愛～',
-  '(素)香茅椰肉野菇湯': '【素別：五辛素(鍋邊素)】',
-  '(素)清炒空心菜': '【素別：五辛素(鍋邊素)】',
-  '(素)清炒什錦蔬菜': '【素別：五辛素(鍋邊素)】',
-  '(素)清炒高麗菜': '【素別：五辛素(鍋邊素)】',
-  '(素)鮮菇玉米湯': '【素別：蛋奶素(鍋邊素)】',
-  '(素)蛋素青木瓜涼拌': '【素別：蛋素(鍋邊素)】',
-  '(素)蛋素什錦炒飯': '【素別：蛋素(鍋邊素)】',
-  '(素)蛋素炒河粉': '【素別：蛋素(鍋邊素)】',
-  '泰式奶茶(冰/熱)': '茶葉與奶香的完美比例，冰涼熟悉的味道讓人一秒飛到泰國。',
-  '泰多凍檸綠': '多到炸出來的檸檬片，與綠茶酸甜交織，沁爽又解膩。',
-  '檸檬茶': '檸檬汁加上綠茶就是清爽解渴。',
-  '荔枝冰茶啵啵': '荔枝果肉融入紅茶，甘甜順口，尾韻帶有淡淡斑蘭清香，搭配啵啵增添爽脆嚼感。',
-  '椰夏薄荷泡泡': '薄荷與椰子水交織出清涼氣泡，清爽解膩。',
-  '椰子汁': '饗泰多招牌椰子汁與香Q椰子果肉，一喝祛熱透心涼。',
-  '荔枝香芒泡泡': '以芒果泥與荔枝果肉特調漸層氣泡飲，冰冰涼涼，暢快過癮。',
-  '清香舒芙茶': '清新花草揉合薄荷與洋甘菊，茶香清新柔和。',
-  '穀香蕎麥茶': '蕎麥與國寶茶葉焙煮調和，入口穀香濃厚尾韻甘潤。',
-  '泰象啤酒': '帶有淡淡的麥芽香氣與微妙的果香，口感清爽順口。',
-  '勝獅啤酒': '泰國經典拉格啤酒，麥香清爽順口。',
-  '可樂': '經典暢快氣泡飲。',
-  '摩摩喳喳': '豐富果肉與配料的黃金比例，淋上濃郁香醇的椰漿，口感十足的招牌甜點！',
-  '椰香黑糯米(冰/熱)': '黑糯米加上濃郁椰漿、亞達子更添Q彈口感。',
-  '椰子冰淇淋': '香濃椰子冰淇淋搭配精選配料，清爽消暑。',
-  '厚泰奶布丁': '以泰式奶茶熬煮製成的滑順布丁，茶香濃郁、口感柔嫩。',
-  '椰香熱帶冰沙': '香蕉芒果椰奶冰沙，再加上一球椰子冰淇淋，彷彿置身熱帶島嶼！',
-  '雙醬金磚吐司': '厚切吐司烤至金黃微焦，搭配濃郁泰奶煉乳與香蘭葉醬，品嘗泰國超人氣經典。'
+  '泰國香米飯': '每位 NT$ 40',
+  '摩摩喳喳': '招牌泰式甜品',
+  '椰香黑糯米': '濃郁椰漿黑糯米'
 };
 
-const OFFICIAL_SPICE_MAP = {
-  '爆爽辣炒牛': 3,
-  '椰香綠咖哩雞': 2,
-  '濃香紅咖哩魚片': 2,
-  '綠咖哩嫩炸豆腐': 2,
-  '打拋炸蛋': 2,
-  '冬蔭海鮮湯': 2,
-  '青檸酸辣海鮮湯': 2,
-  '泰味雲耳(小菜②)': 2,
-  '咔滋椒麻雞': 2,
-  '酸辣海鮮涼拌': 2,
-  '香煎瀑布牛涼拌': 1,
-  '現搗青木瓜涼拌': 1,
-  '泰式手撕雞涼拌': 1,
-  '酸辣蒜黃瓜(小菜③)': 1,
-  '泰味三拼(小菜3款)': 1,
-  '扒飯打拋豬': 1,
-  '清香檸檬魚': 1,
-  '檸香蒸扁鱈': 1,
-  '香料爐烤紙包魚': 1,
-  '黃咖哩軟殼蟹': 1,
-  '泰式鹹蛋中卷': 1,
-  '蝦醬空心菜': 1,
-  '泰北鄉村茄': 1,
-  '帕能咖哩雞': 1
-};
+function createSeedSets() {
+  return [
+    {
+      id: 'cny_set_2', people: 2, name: '春節兩人套餐', summary: '4菜、白飯、飲料', price: 1760,
+      availableDineIn: true, availableTakeout: true, image: '',
+      fixed: ['冠軍月亮蝦餅', '泰國香米飯x2人'],
+      groups: [
+        { key: 'salad', title: '涼拌', pickCount: 1, options: ['酸辣海鮮涼拌', '香煎瀑布牛涼拌'] },
+        { key: 'meat', title: '肉類', pickCount: 1, options: ['爆爽辣炒牛', '扒飯打拋豬', '咔滋椒麻雞'] },
+        { key: 'veg', title: '青菜', pickCount: 1, options: ['泰香炒野蓮', '泰炒什錦蔬菜'] },
+        { key: 'drink', title: '飲料（可加價升級酒類/特調飲品）', pickCount: 2, options: ['泰式奶茶', '檸檬茶'] }
+      ],
+      addons: []
+    },
+    {
+      id: 'cny_set_4', people: 4, name: '春節四人套餐', summary: '7菜、1湯、白飯、飲料', price: 3520,
+      availableDineIn: true, availableTakeout: true, image: '',
+      fixed: ['冠軍月亮蝦餅', '檸香蒸扁鱈', '帕能咖哩雞', '泰國香米飯x4人'],
+      groups: [
+        { key: 'salad', title: '涼拌', pickCount: 1, options: ['酸辣海鮮涼拌', '香煎瀑布牛涼拌'] },
+        { key: 'meat', title: '肉類', pickCount: 1, options: ['爆爽辣炒牛', '扒飯打拋豬', '咔滋椒麻雞'] },
+        { key: 'veg', title: '青菜', pickCount: 1, options: ['泰香炒野蓮', '泰炒什錦蔬菜'] },
+        { key: 'egg', title: '蛋豆腐', pickCount: 1, options: ['厚煎海鮮烘蛋', '金湯椰香豆腐煲', '泰滑蝦扯蛋'] },
+        { key: 'soup', title: '湯品', pickCount: 1, options: ['青檸酸辣海鮮湯', '香茅椰肉蛤蜊雞湯'] },
+        { key: 'drink', title: '飲料（可加價升級酒類/特調飲品）', pickCount: 4, options: ['泰式奶茶', '檸檬茶'] }
+      ],
+      addons: []
+    },
+    {
+      id: 'cny_set_6', people: 6, name: '春節六人套餐', summary: '10菜、1湯、白飯、飲料', price: 5280,
+      availableDineIn: true, availableTakeout: true, image: '',
+      fixed: ['清香檸檬魚', '冠軍月亮蝦餅', '泰香炙烤牛小排', '黃咖哩軟殼蟹', '泰國香米飯x6人'],
+      groups: [
+        { key: 'salad', title: '涼拌', pickCount: 1, options: ['酸辣海鮮涼拌', '香煎瀑布牛涼拌'] },
+        { key: 'curry', title: '咖哩', pickCount: 1, options: ['黃金咖哩雞', '瑪莎曼燉牛肉', '帕能咖哩雞'] },
+        { key: 'meat', title: '肉類', pickCount: 1, options: ['爆爽辣炒牛', '扒飯打拋豬', '咔滋椒麻雞'] },
+        { key: 'egg', title: '蛋豆腐', pickCount: 1, options: ['厚煎海鮮烘蛋', '金湯椰香豆腐煲', '泰滑蝦扯蛋'] },
+        { key: 'veg', title: '青菜', pickCount: 2, options: ['蒜香乾蝦小豆苗', '泰炒什錦蔬菜', '泰香炒野蓮'] },
+        { key: 'soup', title: '湯品', pickCount: 1, options: ['青檸酸辣海鮮湯', '香茅椰肉蛤蜊雞湯'] },
+        { key: 'drink', title: '飲料（可加價升級酒類/特調飲品）', pickCount: 6, options: ['泰式奶茶', '檸檬茶'] }
+      ],
+      addons: []
+    },
+    {
+      id: 'cny_set_8', people: 8, name: '春節八人套餐', summary: '11菜、2湯、白飯、飲料', price: 7060,
+      availableDineIn: true, availableTakeout: true, image: '',
+      fixed: ['清香檸檬魚', '冠軍月亮蝦餅', '泰香炙烤牛小排（大）', '黃咖哩軟殼蟹', '青檸酸辣海鮮湯', '香茅椰肉蛤蜊雞湯', '泰國香米飯x8人'],
+      groups: [
+        { key: 'salad', title: '涼拌', pickCount: 1, options: ['酸辣海鮮涼拌', '香煎瀑布牛涼拌'] },
+        { key: 'curry', title: '咖哩', pickCount: 1, options: ['黃金咖哩雞', '瑪莎曼燉牛肉', '帕能咖哩雞'] },
+        { key: 'meat', title: '肉類', pickCount: 2, options: ['扒飯打拋豬', '爆爽辣炒牛', '咔滋椒麻雞'] },
+        { key: 'egg', title: '蛋豆腐', pickCount: 1, options: ['厚煎海鮮烘蛋', '金湯椰香豆腐煲', '泰滑蝦扯蛋'] },
+        { key: 'veg', title: '青菜', pickCount: 2, options: ['蒜香乾蝦小豆苗（大）', '泰炒什錦蔬菜（大）', '泰香炒野蓮（大）'] },
+        { key: 'drink', title: '飲料（可加價升級酒類/特調飲品）', pickCount: 8, options: ['泰式奶茶', '檸檬茶'] }
+      ],
+      addons: []
+    },
+    {
+      id: 'cny_set_10', people: 10, name: '春節十人套餐', summary: '14菜、2湯、白飯、飲料', price: 8888,
+      availableDineIn: true, availableTakeout: true, image: '',
+      fixed: ['清香檸檬魚', '冠軍月亮蝦餅(大)', '黃咖哩軟殼蟹', '秘醬炙烤肋排（10塊）', '泰香炙烤牛小排（大）', '酸辣海鮮涼拌(大)', '香煎瀑布牛涼拌(大)', '青檸酸辣海鮮湯', '香茅椰肉蛤蜊雞湯', '泰國香米飯x10人'],
+      groups: [
+        { key: 'curry', title: '咖哩', pickCount: 1, options: ['黃金咖哩雞', '瑪莎曼燉牛肉', '帕能咖哩雞'] },
+        { key: 'meat', title: '肉類', pickCount: 2, options: ['扒飯打拋豬', '爆爽辣炒牛', '咔滋椒麻雞'] },
+        { key: 'egg', title: '蛋豆腐', pickCount: 2, options: ['厚煎海鮮烘蛋', '金湯椰香豆腐煲', '泰滑蝦扯蛋'] },
+        { key: 'veg', title: '青菜', pickCount: 2, options: ['蒜香乾蝦小豆苗（大）', '泰炒什錦蔬菜（大）', '泰香炒野蓮（大）'] },
+        { key: 'drink', title: '飲料（可加價升級酒類/特調飲品）', pickCount: 10, options: ['泰式奶茶', '檸檬茶'] }
+      ],
+      addons: []
+    }
+  ];
+}
 
 function createSeedMenu() {
   const raw = [
-    // 饗泰多TOP10
-    ['饗泰多TOP10', '冠軍月亮蝦餅', 480, '辣度固定', '不辣'],
-    ['饗泰多TOP10', '黃咖哩軟殼蟹', 580, '辣度固定', ''],
-    ['饗泰多TOP10', '清香檸檬魚', 500, '可調辣', ''],
-    ['饗泰多TOP10', '香煎瀑布牛涼拌', 410, '可調辣', ''],
-    ['饗泰多TOP10', '酸辣海鮮涼拌', 400, '辣度固定', ''],
-    ['饗泰多TOP10', '咔滋椒麻雞', 330, '可調辣', ''],
-    ['饗泰多TOP10', '冬蔭海鮮湯', 390, '辣度固定', ''],
-    ['饗泰多TOP10', '厚煎海鮮烘蛋', 330, '辣度固定', '不辣'],
-    ['饗泰多TOP10', '椰香綠咖哩雞', 330, '辣度固定', ''],
-    ['饗泰多TOP10', '醬烤沙嗲雞', 300, '辣度固定', '不辣'],
-    // 夏季新菜
-    ['夏季新菜', '魚鬆西瓜涼拌', 350, '辣度固定', '不辣'],
-    ['夏季新菜', '楓糖炙烤子排', 610, '辣度固定', '不辣'],
-    ['夏季新菜', '帕能咖哩雞', 350, '辣度固定', '不辣'],
-    ['夏季新菜', '金沙滑蛋高麗菜', 280, '辣度固定', '不辣'],
-    ['夏季新菜', '蒜酥松坂蝦醬拌飯', 420, '辣度固定', '不辣'],
-    ['夏季新菜', '青檸酸辣海鮮湯', 420, '辣度固定', ''],
-    ['夏季新菜', '椰奶菇菇雞湯', 550, '辣度固定', '不辣'],
-    ['夏季新菜', '荔枝冰茶啵啵', 150, '辣度固定', '不辣'],
-    ['夏季新菜', '椰夏薄荷泡泡', 170, '辣度固定', '不辣'],
-    ['夏季新菜', '雙醬金磚吐司', 150, '辣度固定', '不辣'],
-    ['夏季新菜', '酥烤泰香雞(預訂菜)', 800, '辣度固定', '不辣'],
-    // 開胃涼拌
-    ['開胃涼拌', '香煎瀑布牛涼拌', 410, '可調辣', ''],
-    ['開胃涼拌', '現搗青木瓜涼拌', 270, '可調辣', ''],
-    ['開胃涼拌', '酸辣海鮮涼拌', 400, '辣度固定', ''],
-    ['開胃涼拌', '泰式手撕雞涼拌', 330, '可調辣', ''],
-    ['開胃涼拌', '蒜蝦拌花椰(小菜①)', 70, '辣度固定', '不辣'],
-    ['開胃涼拌', '泰味雲耳(小菜②)', 70, '辣度固定', ''],
-    ['開胃涼拌', '酸辣蒜黃瓜(小菜③)', 70, '辣度固定', ''],
-    ['開胃涼拌', '泰味三拼(小菜3款)', 170, '辣度固定', '花椰菜(0辣)、雲耳(2辣)、蒜黃瓜(1辣)'],
-    // 牛香四溢
-    ['牛香四溢', '東北淚之虎', 500, '辣度固定', '不辣'],
-    ['牛香四溢', '爆爽辣炒牛', 360, '可調辣', ''],
-    ['牛香四溢', '蠔氣爆炒牛', 360, '辣度固定', '不辣'],
-    // 厚實好豬
-    ['厚實好豬', '香烤松阪豬', 390, '辣度固定', '不辣'],
-    ['厚實好豬', '扒飯打拋豬', 320, '可調辣', ''],
-    ['厚實好豬', '泰炸香料豬', 330, '辣度固定', ''],
-    // 鮮嫩多雞
-    ['鮮嫩多雞', '黃金咖哩雞', 330, '辣度固定', '不辣'],
-    ['鮮嫩多雞', '椰香綠咖哩雞', 330, '辣度固定', ''],
-    ['鮮嫩多雞', '醬烤沙嗲雞', 300, '辣度固定', '不辣'],
-    ['鮮嫩多雞', '咔滋椒麻雞', 330, '可調辣', ''],
-    // 大口吃海鮮
-    ['大口吃海鮮', '清香檸檬魚', 500, '可調辣', ''],
-    ['大口吃海鮮', '冠軍月亮蝦餅', 480, '辣度固定', '不辣'],
-    ['大口吃海鮮', '黃咖哩軟殼蟹', 580, '辣度固定', ''],
-    ['大口吃海鮮', '泰式鹹蛋中卷', 480, '辣度固定', '不辣'],
-    ['大口吃海鮮', '檸香蒸扁鱈', 500, '辣度固定', ''],
-    ['大口吃海鮮', '羅望子龍眼蝦球', 420, '辣度固定', ''],
-    ['大口吃海鮮', '濃香紅咖哩魚片', 370, '辣度固定', ''],
-    ['大口吃海鮮', '香料爐烤紙包魚', 520, '辣度固定', ''],
-    ['大口吃海鮮', '蒜香金沙奶油蟹', 580, '辣度固定', '不辣'],
-    // 下飯豆腐蛋
-    ['下飯豆腐蛋', '厚煎海鮮烘蛋', 330, '辣度固定', '不辣'],
-    ['下飯豆腐蛋', '綠咖哩嫩炸豆腐', 260, '辣度固定', ''],
-    ['下飯豆腐蛋', '打拋炸蛋', 330, '辣度固定', ''],
-    ['下飯豆腐蛋', '泰滑蝦扯蛋', 350, '辣度固定', '不辣'],
-    ['下飯豆腐蛋', '金湯椰香豆腐煲', 380, '辣度固定', '不辣'],
-    // 一點都不青菜
-    ['一點都不青菜', '泰炒什錦蔬菜', 240, '辣度固定', '不辣'],
-    ['一點都不青菜', '蝦醬空心菜', 240, '辣度固定', ''],
-    ['一點都不青菜', '泰北鄉村茄', 240, '辣度固定', ''],
-    ['一點都不青菜', '泰香炒野蓮', 260, '辣度固定', '不辣'],
-    // 吃飽來點
-    ['吃飽來點', '小象炒飯', 260, '辣度固定', '不辣'],
-    ['吃飽來點', '饗泰多泰炒河粉', 330, '可調辣', '不辣'],
-    ['吃飽來點', '鮮蝦寬粉煲/小', 390, '辣度固定', ''],
-    ['吃飽來點', '鮮蝦寬粉煲/大', 450, '辣度固定', ''],
-    ['吃飽來點', '泰國香米飯/人', 35, '辣度固定', '不辣'],
-    // 暖胃好湯
-    ['暖胃好湯', '冬蔭海鮮湯', 390, '辣度固定', ''],
-    ['暖胃好湯', '蝦仁玉米湯', 380, '辣度固定', '不辣'],
-    ['暖胃好湯', '香茅椰肉蛤蜊雞湯', 380, '辣度固定', '不辣'],
-    // 有點甜
-    ['有點甜', '摩摩喳喳', 100, '辣度固定', '不辣'],
-    ['有點甜', '椰香黑糯米(冰/熱)', 100, '辣度固定', '不辣'],
-    ['有點甜', '椰子冰淇淋', 100, '辣度固定', '不辣'],
-    ['有點甜', '椰香熱帶冰沙', 130, '辣度固定', '不辣'],
-    ['有點甜', '厚泰奶布丁', 100, '辣度固定', '不辣'],
-    // 來杯泰飲
-    ['來杯泰飲', '泰式奶茶(冰/熱)', 120, '辣度固定', '不辣'],
-    ['來杯泰飲', '檸檬茶', 120, '辣度固定', '不辣'],
-    ['來杯泰飲', '荔枝香芒泡泡', 140, '辣度固定', '不辣'],
-    ['來杯泰飲', '椰子汁', 150, '辣度固定', '不辣'],
-    ['來杯泰飲', '泰多凍檸綠', 120, '辣度固定', '不辣'],
-    ['來杯泰飲', '可樂', 60, '辣度固定', '不辣'],
-    ['來杯泰飲', '泰象啤酒', 150, '辣度固定', '不辣'],
-    ['來杯泰飲', '勝獅啤酒', 140, '辣度固定', '不辣'],
-    ['來杯泰飲', '清香舒芙茶', 100, '辣度固定', '不辣'],
-    ['來杯泰飲', '穀香蕎麥茶', 100, '辣度固定', '不辣'],
-    // 來點蔬食
-    ['來點蔬食', '(素)蛋素青木瓜涼拌', 260, '辣度固定', '不辣'],
-    ['來點蔬食', '(素)蛋素什錦炒飯', 280, '辣度固定', '不辣'],
-    ['來點蔬食', '(素)蛋素炒河粉', 260, '辣度固定', '不辣'],
-    ['來點蔬食', '(素)清炒空心菜', 220, '辣度固定', '不辣'],
-    ['來點蔬食', '(素)清炒什錦蔬菜', 220, '辣度固定', '不辣'],
-    ['來點蔬食', '(素)清炒高麗菜', 220, '辣度固定', '不辣'],
-    ['來點蔬食', '(素)鮮菇玉米湯', 320, '辣度固定', '不辣'],
-    ['來點蔬食', '(素)香茅椰肉野菇湯', 300, '辣度固定', '不辣']
+    ['涼拌', '香煎瀑布牛涼拌', 410, 1],
+    ['涼拌', '酸辣海鮮涼拌', 400, 2],
+    ['涼拌', '現搗青木瓜涼拌', 270, 1],
+    ['牛肉', '瑪莎曼燉牛肉', 510, 1],
+    ['牛肉', '泰香炙烤牛小排', 710, 0],
+    ['牛肉', '爆爽辣炒牛', 360, 2],
+    ['牛肉', '蠔氣爆炒牛', 360, 0],
+    ['豬肉', '蜜醬炙烤肋排', 610, 0],
+    ['豬肉', '扒飯打拋豬', 320, 2],
+    ['豬肉', '香烤松阪豬', 390, 0],
+    ['雞肉', '黃金咖哩雞', 330, 0],
+    ['雞肉', '咔滋椒麻雞', 330, 2],
+    ['雞肉', '帕能咖哩雞', 350, 1],
+    ['蛋豆腐', '厚煎海鮮烘蛋', 330, 0],
+    ['蛋豆腐', '泰滑蝦扯蛋', 350, 0],
+    ['蛋豆腐', '金湯椰香豆腐煲', 380, 0],
+    ['海鮮', '冠軍月亮蝦餅', 480, 0],
+    ['海鮮', '黃咖哩軟殼蟹', 580, 1],
+    ['海鮮', '檸香蒸扁鱈', 500, 2],
+    ['海鮮', '檸香酸辣小卷', 480, 1],
+    ['海鮮', '清香檸檬魚', 500, 1],
+    ['青菜', '泰香炒野蓮', 260, 0],
+    ['青菜', '泰炒什錦蔬菜', 240, 0],
+    ['青菜', '蒜香乾蝦小豆苗', 350, 0],
+    ['湯品', '冬蔭海鮮湯', 390, 2],
+    ['湯品', '蝦仁玉米湯', 380, 0],
+    ['湯品', '香茅椰肉蛤蜊雞湯', 380, 0],
+    ['湯品', '青檸酸辣海鮮湯', 420, 2],
+    ['素食', '蛋素青木瓜涼拌', 260, 0],
+    ['素食', '清炒水蓮', 220, 0],
+    ['素食', '清炒什錦蔬菜', 220, 0],
+    ['素食', '鮮菇玉米湯', 320, 0],
+    ['素食', '香茅椰肉野菇湯', 300, 0],
+    ['主食', '泰國香米飯', 40, 0],
+    ['主食', '蒜酥松阪蝦醬拌飯', 420, 0],
+    ['甜點', '摩摩喳喳', 100, 0],
+    ['甜點', '椰香黑糯米', 100, 0],
+    ['飲料', '泰式奶茶', 120, 0],
+    ['飲料', '檸檬茶', 120, 0],
+    ['飲料', '荔枝冰茶啵啵', 150, 0],
+    ['飲料', '泰象啤酒', 150, 0],
+    ['飲料', '臺虎嗨啤', 130, 0],
+    ['飲料', '可樂', 60, 0]
   ];
   return raw.map((r, idx) => ({
     id: 'dish_' + (idx + 1),
     category: r[0],
     name: r[1],
     price: r[2],
-    spiceType: r[3],
-    spiceLevel: OFFICIAL_SPICE_MAP[r[1]] !== undefined ? OFFICIAL_SPICE_MAP[r[1]] : 0,
-    note: OFFICIAL_DESC_MAP[r[1]] || (r[4] === '不辣' ? '' : r[4]),
+    spiceType: '辣度固定',
+    spiceLevel: r[3],
+    note: OFFICIAL_DESC_MAP[r[1]] || '',
     image: '',
     availableDineIn: true,
     availableTakeout: true
@@ -1612,68 +1480,46 @@ function buildOrderTotals(items, diningType) {
 function createSeedOrders() {
   const specs = [
     {
-      id: 'SM26112301', store: '饗泰多松高店', diningType: '內用', date: '2026-11-23', timeSlot: '11:00~13:00',
-      customerName: '邱安琪', phone: '0911223344', status: '已完成', note: '靠窗座位',
+      id: 'SM27020501', store: '饗泰多松高店', diningType: '內用', date: '2027-02-05', timeSlot: '11:00~13:00',
+      customerName: '邱安琪', phone: '0911223344', adults: 4, children: 0, status: '已完成', note: '',
       items: [
-        { name: '黃咖哩軟殼蟹', category: '大口吃海鮮', price: 580, qty: 1, spice: '辣度固定' },
-        { name: '冠軍月亮蝦餅', category: '饗泰多TOP10', price: 480, qty: 1, spice: '辣度固定' },
-        { name: '厚泰奶布丁', category: '有點甜', price: 100, qty: 2, spice: '辣度固定' }
+        {
+          name: '春節四人套餐（4人）', category: '春節多人套餐', price: 3520, qty: 1, isSet: true,
+          subItems: [
+            { name: '冠軍月亮蝦餅', category: '套餐特選', qty: 1 },
+            { name: '檸香蒸扁鱈', category: '套餐特選', qty: 1 },
+            { name: '帕能咖哩雞', category: '套餐特選', qty: 1 },
+            { name: '酸辣海鮮涼拌', category: '涼拌', qty: 1 },
+            { name: '爆爽辣炒牛', category: '肉類', qty: 1 },
+            { name: '泰香炒野蓮', category: '青菜', qty: 1 },
+            { name: '厚煎海鮮烘蛋', category: '蛋豆腐', qty: 1 },
+            { name: '青檸酸辣海鮮湯', category: '湯品', qty: 1 },
+            { name: '泰式奶茶', category: '飲料', qty: 4 }
+          ]
+        }
       ]
     },
     {
-      id: 'SM26112302', store: '饗泰多八德店', diningType: '外帶', date: '2026-11-23', timeSlot: '17:00~19:00',
-      customerName: '江養妍', phone: '0922334455', status: '已完成', note: '',
+      id: 'SM27020601', store: '饗泰多八德店', diningType: '內用', date: '2027-02-06', timeSlot: '17:00~19:00',
+      customerName: '陳柏宇', phone: '0977334455', adults: 6, children: 0, status: '待確認', note: '',
       items: [
-        { name: '魚鬆西瓜涼拌', category: '夏季新菜', price: 350, qty: 2, spice: '辣度固定' },
-        { name: '蒜酥松坂蝦醬拌飯', category: '夏季新菜', price: 420, qty: 1, spice: '辣度固定' }
-      ]
-    },
-    {
-      id: 'SM26112303', store: '饗泰多新竹店', diningType: '內用', date: '2026-11-23', timeSlot: '19:30~21:30',
-      customerName: '焦小姐', phone: '0933445566', status: '已完成', note: '',
-      items: [
-        { name: '楓糖炙烤子排', category: '夏季新菜', price: 610, qty: 1, spice: '辣度固定' },
-        { name: '黃咖哩軟殼蟹', category: '大口吃海鮮', price: 580, qty: 1, spice: '辣度固定' },
-        { name: '泰式奶茶(冰/熱)', category: '來杯泰飲', price: 120, qty: 2, spice: '辣度固定' }
-      ]
-    },
-    {
-      id: 'SM26112701', store: '饗泰多松高店', diningType: '內用', date: '2026-11-27', timeSlot: '11:00~13:00',
-      customerName: '林佳穎', phone: '0955112233', status: '備餐中', note: '',
-      items: [
-        { name: '冠軍月亮蝦餅', category: '饗泰多TOP10', price: 480, qty: 2, spice: '辣度固定' },
-        { name: '清香檸檬魚', category: '饗泰多TOP10', price: 500, qty: 1, spice: '微辣' },
-        { name: '蝦醬空心菜', category: '一點都不青菜', price: 240, qty: 1, spice: '辣度固定' },
-        { name: '泰國香米飯/人', category: '吃飽來點', price: 35, qty: 4, spice: '辣度固定' }
-      ]
-    },
-    {
-      id: 'SM26112702', store: '饗泰多竹北遠百店', diningType: '外帶', date: '2026-11-27', timeSlot: '13:30~15:30',
-      customerName: '張志豪', phone: '0966223344', status: '待確認', note: '餐具兩份',
-      items: [
-        { name: '扒飯打拋豬', category: '厚實好豬', price: 320, qty: 2, spice: '小辣' },
-        { name: '饗泰多泰炒河粉', category: '吃飽來點', price: 330, qty: 1, spice: '不辣' },
-        { name: '泰式奶茶(冰/熱)', category: '來杯泰飲', price: 120, qty: 2, spice: '辣度固定' }
-      ]
-    },
-    {
-      id: 'SM26112703', store: '饗泰多松高店', diningType: '內用', date: '2026-11-27', timeSlot: '17:00~19:00',
-      customerName: '陳柏宇', phone: '0977334455', status: '待確認', note: '慶生',
-      items: [
-        { name: '酥烤泰香雞(預訂菜)', category: '夏季新菜', price: 800, qty: 1, spice: '辣度固定' },
-        { name: '冬蔭海鮮湯', category: '暖胃好湯', price: 390, qty: 1, spice: '辣度固定' },
-        { name: '黃咖哩軟殼蟹', category: '大口吃海鮮', price: 580, qty: 1, spice: '辣度固定' },
-        { name: '厚泰奶布丁', category: '有點甜', price: 100, qty: 3, spice: '辣度固定' }
-      ]
-    },
-    {
-      id: 'SM26112704', store: '饗泰多八德店', diningType: '內用', date: '2026-11-27', timeSlot: '19:30~21:30',
-      customerName: '吳佩珊', phone: '0988445566', status: '待確認', note: '',
-      items: [
-        { name: '香煎瀑布牛涼拌', category: '饗泰多TOP10', price: 410, qty: 1, spice: '小辣' },
-        { name: '咔滋椒麻雞', category: '饗泰多TOP10', price: 330, qty: 2, spice: '中辣' },
-        { name: '椰香綠咖哩雞', category: '鮮嫩多雞', price: 330, qty: 1, spice: '辣度固定' },
-        { name: '摩摩喳喳', category: '有點甜', price: 100, qty: 2, spice: '辣度固定' }
+        {
+          name: '春節六人套餐（6人）', category: '春節多人套餐', price: 5280, qty: 1, isSet: true,
+          subItems: [
+            { name: '清香檸檬魚', category: '套餐特選', qty: 1 },
+            { name: '冠軍月亮蝦餅', category: '套餐特選', qty: 1 },
+            { name: '泰香炙烤牛小排', category: '套餐特選', qty: 1 },
+            { name: '黃咖哩軟殼蟹', category: '套餐特選', qty: 1 },
+            { name: '香煎瀑布牛涼拌', category: '涼拌', qty: 1 },
+            { name: '黃金咖哩雞', category: '咖哩', qty: 1 },
+            { name: '扒飯打拋豬', category: '肉類', qty: 1 },
+            { name: '金湯椰香豆腐煲', category: '蛋豆腐', qty: 1 },
+            { name: '蒜香乾蝦小豆苗', category: '青菜', qty: 2 },
+            { name: '香茅椰肉蛤蜊雞湯', category: '湯品', qty: 1 },
+            { name: '泰式奶茶', category: '飲料', qty: 6 }
+          ]
+        },
+        { name: '摩摩喳喳', category: '甜點', price: 100, qty: 4, spice: '辣度固定' }
       ]
     }
   ];
@@ -1721,7 +1567,7 @@ let state = {
   customerDraft: {
     store: '饗泰多松高店',
     diningType: '內用',
-    date: '2026-11-27',
+    date: '2027-02-05',
     timeSlot: '11:00~13:00',
     name: '',
     phone: '',
@@ -1729,7 +1575,7 @@ let state = {
     children: 0,
     note: ''
   },
-  activeCategory: '饗泰多TOP10',
+  activeCategory: '春節多人套餐',
   cart: [],
   pendingSpiceDish: null,
   editingOrderId: null,
@@ -1739,7 +1585,7 @@ let state = {
   adminMenuSubtab: 'dishes',
   pendingSetConfig: null,
   setConfigTarget: 'customer',
-  upsellDishName: '厚泰奶布丁',
+  upsellDishName: '摩摩喳喳',
   dishFormImage: '',
   setFormImage: '',
   orders: [],
@@ -1756,8 +1602,16 @@ let chartInstances = {
 };
 
 function normalizeAvailability(list) {
+  const cleanName = (n) => {
+    if (!n) return n;
+    return n
+      .replace(/^摩摩喳喳\(.*\)$/, '摩摩喳喳')
+      .replace(/^椰香黑糯米\(.*\)$/, '椰香黑糯米')
+      .replace(/^泰式奶茶\(.*\)$/, '泰式奶茶');
+  };
   return list.map(item => ({
     ...item,
+    name: cleanName(item.name),
     spiceLevel: item.spiceCustom ? item.spiceLevel : (OFFICIAL_SPICE_MAP[item.name] !== undefined ? OFFICIAL_SPICE_MAP[item.name] : (item.spiceLevel || 0)),
     note: (!item.note || item.note === '不辣') ? (OFFICIAL_DESC_MAP[item.name] || '') : item.note,
     availableDineIn: item.availableDineIn !== undefined ? item.availableDineIn : (item.available !== undefined ? item.available : true),
@@ -1772,7 +1626,7 @@ function isItemAvailableFor(item, diningType) {
 function loadInitialData() {
   state.menu = normalizeAvailability(safeGet(STORAGE_KEYS.MENU, null) || createSeedMenu());
   state.sets = normalizeAvailability(safeGet(STORAGE_KEYS.SETS, null) || createSeedSets());
-  state.upsellDishName = safeGet(STORAGE_KEYS.UPSELL, '厚泰奶布丁');
+  state.upsellDishName = safeGet(STORAGE_KEYS.UPSELL, '摩摩喳喳');
   state.orders = safeGet(STORAGE_KEYS.ORDERS, null) || createSeedOrders();
   state.auth = safeGet(STORAGE_KEYS.AUTH, null) || { ...DEFAULT_AUTH };
   safeSet(STORAGE_KEYS.MENU, state.menu);
@@ -1872,7 +1726,19 @@ function onAdminStoreSelectChange() {
 
 // ==================== BILINGUAL (ZH / EN) SUPPORT ====================
 const EN_CAT_MAP = {
-  '套餐組合': 'Set Meals',
+  '春節多人套餐': 'CNY Set Meals',
+  '涼拌': 'Salads',
+  '牛肉': 'Beef',
+  '豬肉': 'Pork',
+  '雞肉': 'Chicken',
+  '蛋豆腐': 'Tofu & Eggs',
+  '海鮮': 'Seafood',
+  '青菜': 'Vegetables',
+  '湯品': 'Soups',
+  '素食': 'Vegetarian',
+  '主食': 'Rice',
+  '甜點': 'Desserts',
+  '飲料': 'Drinks',
   '饗泰多TOP10': 'Top 10 Favorites',
   '夏季新菜': 'Seasonal Specials',
   '開胃涼拌': 'Salads & Starters',
@@ -1890,6 +1756,19 @@ const EN_CAT_MAP = {
 };
 
 const EN_DISH_MAP = {
+  '瑪莎曼燉牛肉': 'Massaman Beef Curry',
+  '泰香炙烤牛小排': 'Spice-Grilled Beef Short Ribs',
+  '蜜醬炙烤肋排': 'Glazed Grilled Pork Ribs',
+  '檸香酸辣小卷': 'Spicy Lime Squid',
+  '蒜香乾蝦小豆苗': 'Pea Shoots with Crispy Garlic & Dried Shrimp',
+  '清炒水蓮': 'Stir-fried Water Snowflake Stems',
+  '清炒什錦蔬菜': 'Stir-fried Mixed Vegetables',
+  '鮮菇玉米湯': 'Mushroom & Corn Soup',
+  '香茅椰肉野菇湯': 'Lemongrass Coconut Mushroom Soup',
+  '蛋素青木瓜涼拌': 'Green Papaya Salad (Veg)',
+  '泰國香米飯': 'Jasmine Rice',
+  '摩摩喳喳': 'Burbur Cha Cha',
+  '臺虎嗨啤': 'TAIHU High Beer',
   '冠軍月亮蝦餅': 'Champion Prawn Cake',
   '黃咖哩軟殼蟹': 'Yellow Curry Softshell Crab',
   '清香檸檬魚': 'Steamed Sea Bass with Lime & Chili',
@@ -1946,11 +1825,11 @@ const EN_DISH_MAP = {
   '蝦仁玉米湯': 'Creamy Corn Shrimp Soup',
   '香茅椰肉蛤蜊雞湯': 'Lemongrass Coconut Clam & Chicken Soup',
   '摩摩喳喳': 'Burbur Cha Cha',
-  '椰香黑糯米(冰/熱)': 'Black Glutinous Rice Dessert',
+  '椰香黑糯米': 'Black Glutinous Rice Dessert',
   '椰子冰淇淋': 'Coconut Ice Cream',
   '椰香熱帶冰沙': 'Tropical Banana & Mango Smoothie',
   '厚泰奶布丁': 'Thai Milk Tea Pudding',
-  '泰式奶茶(冰/熱)': 'Thai Milk Tea (Ice / Hot)',
+  '泰式奶茶': 'Thai Milk Tea (Ice / Hot)',
   '檸檬茶': 'Lemon Tea',
   '荔枝香芒泡泡': 'Lychee & Mango Soda',
   '椰子汁': 'Coconut Water',
@@ -1971,6 +1850,11 @@ const EN_DISH_MAP = {
 };
 
 const EN_SET_MAP = {
+  '春節兩人套餐': 'CNY Set for 2',
+  '春節四人套餐': 'CNY Set for 4',
+  '春節六人套餐': 'CNY Set for 6',
+  '春節八人套餐': 'CNY Set for 8',
+  '春節十人套餐': 'CNY Set for 10',
   '【二人套餐】': 'Set Menu for 2',
   '【四人套餐】': 'Set Menu for 4',
   '【六人套餐】': 'Set Menu for 6',
@@ -2064,7 +1948,12 @@ function selectDiningType(type) {
 
 function renderCustomerTimeSlots() {
   const dateInput = document.getElementById('cust-date');
-  if (!dateInput.value) dateInput.value = state.customerDraft.date;
+  if (!dateInput.value || dateInput.value < '2027-02-05' || dateInput.value > '2027-02-10') {
+    if (dateInput.value && (dateInput.value < '2027-02-05' || dateInput.value > '2027-02-10')) {
+      showToast('春節期間僅開放 2027/02/05 ~ 2027/02/10 訂餐', 'info');
+    }
+    dateInput.value = '2027-02-05';
+  }
   state.customerDraft.date = dateInput.value;
 
   const isDineIn = state.customerDraft.diningType === '內用';
@@ -2210,14 +2099,24 @@ function renderCustomerMenu() {
   const q = (document.getElementById('menu-search-input').value || '').trim().toLowerCase();
   const grid = document.getElementById('menu-dishes-grid');
 
-  // If 套餐組合 is selected (and not searching single dishes)
-  if (!q && state.activeCategory === '套餐組合') {
+  const hasSetInCart = state.cart.some(it => it.isSet);
+
+  const reqBadge = document.getElementById('cny-guest-req-badge');
+  if (reqBadge) {
+    reqBadge.classList.remove('hidden');
+    reqBadge.textContent = hasSetInCart ? '已選購春節套餐（可單點加點）' : '請先選購任一春節套餐';
+  }
+
+  // If 春節多人套餐 is selected (and not searching single dishes)
+  if (!q && state.activeCategory === '春節多人套餐') {
     const availSets = state.sets.filter(s => isItemAvailableFor(s, state.customerDraft.diningType));
     if (availSets.length === 0) {
       grid.innerHTML = `<div class="col-span-full bg-white rounded-2xl p-8 text-center text-stone-400 border border-stone-200">目前暫無供應中套餐</div>`;
       return;
     }
-    grid.innerHTML = availSets.map(s => `
+    grid.innerHTML = availSets.map(s => {
+      const eligible = true;
+      return `
       <div class="bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm flex flex-col justify-between hover:border-violet-400 transition">
         ${s.image ? `<div class="w-full h-32 sm:h-36 bg-stone-50 flex items-center justify-center overflow-hidden border-b border-stone-100 p-1.5"><img src="${s.image}" alt="${s.name}" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'" /></div>` : ''}
         <div class="p-4 flex-1 flex flex-col justify-between gap-3">
@@ -2232,14 +2131,20 @@ function renderCustomerMenu() {
           </div>
           <div class="flex items-center justify-between pt-3 border-t border-stone-100">
             <span class="font-bold text-violet-950 text-lg">NT$ ${s.price.toLocaleString()}</span>
-            <button type="button" onclick="openSetConfigModal('${s.id}')"
-              class="px-4 py-2 rounded-xl brand-purple brand-purple-hover text-white text-xs font-semibold transition">
-              ${state.lang === "en" ? "Select Dishes →" : "選購套餐菜色 →"}
-            </button>
+            ${eligible
+              ? `<button type="button" onclick="openSetConfigModal('${s.id}')"
+                  class="px-4 py-2 rounded-xl brand-purple brand-purple-hover text-white text-xs font-semibold transition">
+                  ${state.lang === "en" ? "Select Dishes →" : "選購套餐菜色 →"}
+                </button>`
+              : `<span class="px-3 py-1.5 rounded-xl bg-stone-200 text-stone-500 text-xs font-semibold cursor-not-allowed">
+                  暫無供應
+                </span>`
+            }
           </div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     return;
   }
 
@@ -2267,9 +2172,13 @@ function renderCustomerMenu() {
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-stone-100">
           <span class="font-bold text-violet-950 text-base">NT$ ${d.price}</span>
-          <button type="button" onclick="handleAddDishClick('${d.id}')"
-            class="px-3.5 py-1.5 rounded-xl brand-purple brand-purple-hover text-white text-xs font-semibold transition">
-            + 加入
+          <button type="button" ${hasSetInCart ? '' : 'disabled'} onclick="handleAddDishClick('${d.id}')"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
+              hasSetInCart
+                ? 'brand-purple brand-purple-hover text-white'
+                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+            }">
+            ${hasSetInCart ? (state.lang === "en" ? "+ Add" : "+ 加入") : '請先選購套餐'}
           </button>
         </div>
       </div>
@@ -2314,7 +2223,7 @@ function renderSetConfigBody() {
   let html = `
     <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs">
       <div class="font-bold text-amber-900 mb-1">套餐固定包含（不需另選）</div>
-      <div class="text-stone-700">${s.fixed.join('、')}</div>
+      <div class="text-stone-700 flex flex-wrap gap-x-2 gap-y-1">${s.fixed.map(fn => `<span>${fn}${renderChiliIcons(OFFICIAL_SPICE_MAP[fn] || 0)}</span>`).join('、')}</div>
     </div>
   `;
 
@@ -2356,7 +2265,7 @@ function renderSetConfigBody() {
             const qty = cfg.selections[g.key][opt] || 0;
             return `
               <div class="flex items-center justify-between px-3 py-2 rounded-lg border ${qty > 0 ? 'border-violet-600 bg-violet-50/60' : 'border-stone-200 bg-stone-50/50'}">
-                <span class="text-xs font-medium text-stone-800 truncate pr-2">${opt}</span>
+                <span class="text-xs font-medium text-stone-800 truncate pr-2">${opt} ${renderChiliIcons(OFFICIAL_SPICE_MAP[opt] || 0)}</span>
                 <div class="flex items-center gap-1.5 shrink-0">
                   <button type="button" onclick="adjustSetOption('${g.key}', '${opt.replace(/'/g, "\'")}', -1)"
                     class="w-6 h-6 rounded bg-white border border-stone-300 text-xs font-bold hover:bg-stone-100">-</button>
@@ -2450,7 +2359,7 @@ function confirmAddSetToCart() {
 
   s.fixed.forEach(fn => {
     const clean = fn.replace(/\(.*\)/g, '');
-    subItems.push({ name: fn, category: '套餐組合', qty: 1 });
+    subItems.push({ name: fn, category: '春節多人套餐', qty: 1 });
   });
   s.groups.forEach(g => {
     Object.entries(cfg.selections[g.key]).forEach(([opt, qty]) => {
@@ -2469,7 +2378,7 @@ function confirmAddSetToCart() {
   const setItem = {
     dishId: s.id + '_' + Date.now(),
     name: `${s.name}（${s.people}人）`,
-    category: '套餐組合',
+    category: '春節多人套餐',
     price: s.price + addonTotal,
     spice: detailText,
     qty: 1,
@@ -2485,11 +2394,13 @@ function confirmAddSetToCart() {
   } else {
     state.cart.push(setItem);
     updateCartUI();
+    renderCustomerMenu();
     showToast(`已將「${s.name}」加入預點餐明細`);
   }
 }
 
 function handleAddDishClick(dishId) {
+  if (!state.cart.some(it => it.isSet)) { showToast('春節期間請先點選任一春節多人套餐，方能單點加點', 'error'); return; }
   const dish = state.menu.find(d => d.id === dishId);
   if (!dish || !isItemAvailableFor(dish, state.customerDraft.diningType)) return;
   addItemToCart(dish, '辣度固定');
@@ -2539,6 +2450,7 @@ function renderUpsellBox() {
 }
 
 function quickAddRecommended() {
+  if (!state.cart.some(it => it.isSet)) { showToast('春節期間請先點選任一春節多人套餐，方能單點加點', 'error'); return; }
   const dish = state.menu.find(d => d.name === state.upsellDishName) || state.menu.find(d => d.name === '厚泰奶布丁') || {
     id: 'dish_rec_pudding', name: '厚泰奶布丁', category: '有點甜', price: 100
   };
@@ -2551,6 +2463,7 @@ function changeCartQty(idx, delta) {
   item.qty += delta;
   if (item.qty <= 0) state.cart.splice(idx, 1);
   updateCartUI();
+  if (state.customerStep === 4) renderCustomerMenu();
 }
 
 function updateCartUI() {
@@ -2588,11 +2501,32 @@ function updateCartUI() {
   document.getElementById('cart-service-row').classList.toggle('hidden', state.customerDraft.diningType !== '內用');
   document.getElementById('cart-service-fee').textContent = `NT$ ${serviceFee.toLocaleString()}`;
   document.getElementById('cart-total').textContent = `NT$ ${total.toLocaleString()}`;
-  document.getElementById('btn-submit-order').disabled = state.cart.length === 0;
+  const minSpendBox = document.getElementById('cart-minspend-box');
+  let minSpendOk = true;
+  if (minSpendBox) {
+    if (state.customerDraft.diningType === '內用') {
+      const guests = (state.customerDraft.adults || 1) + (state.customerDraft.children || 0);
+      const minRequired = guests * 600;
+      minSpendOk = subtotal >= minRequired;
+      minSpendBox.classList.remove('hidden');
+      if (minSpendOk) {
+        minSpendBox.className = 'mb-3 px-3 py-2 rounded-xl text-xs font-semibold border bg-emerald-50 text-emerald-800 border-emerald-200';
+        minSpendBox.textContent = `已達春節低消標準（NT$ 600 × ${guests} 位 = NT$ ${minRequired.toLocaleString()}）`;
+      } else {
+        const diff = minRequired - subtotal;
+        minSpendBox.className = 'mb-3 px-3 py-2 rounded-xl text-xs font-semibold border bg-rose-50 text-rose-700 border-rose-200';
+        minSpendBox.textContent = `春節低消 NT$ 600/位（需達 NT$ ${minRequired.toLocaleString()}，尚差 NT$ ${diff.toLocaleString()}）`;
+      }
+    } else {
+      minSpendBox.classList.add('hidden');
+    }
+  }
+  document.getElementById('btn-submit-order').disabled = state.cart.length === 0 || !state.cart.some(it => it.isSet) || !minSpendOk;
 }
 
 function submitCustomerOrder() {
   if (state.cart.length === 0) return;
+  if (!state.cart.some(it => it.isSet)) { showToast('春節期間需點選任一春節多人套餐，方能送出訂單', 'error'); return; }
   const d = state.customerDraft;
   const totals = buildOrderTotals(state.cart, d.diningType);
   const newOrder = {
@@ -2830,8 +2764,8 @@ function onStatsFilterChange() {
   const mode = document.getElementById('filter-date-mode').value;
   document.getElementById('filter-custom-date-wrap').classList.toggle('hidden', mode !== 'custom');
   if (mode === 'custom') {
-    if (!document.getElementById('filter-date-start').value) document.getElementById('filter-date-start').value = '2026-11-23';
-    if (!document.getElementById('filter-date-end').value) document.getElementById('filter-date-end').value = '2026-11-27';
+    if (!document.getElementById('filter-date-start').value) document.getElementById('filter-date-start').value = '2027-02-05';
+    if (!document.getElementById('filter-date-end').value) document.getElementById('filter-date-end').value = '2027-02-10';
   }
   renderAdminStats();
 }
@@ -2865,7 +2799,7 @@ function getFilteredOrders() {
 
   return state.orders.filter(o => {
     if (state.adminStoreFilter !== 'all' && o.store !== state.adminStoreFilter) return false;
-    if (dateMode === 'today' && o.date !== '2026-11-27') return false;
+    if (dateMode === 'today' && o.date !== '2027-02-06') return false;
     if (dateMode === 'custom') {
       if (dateStart && o.date < dateStart) return false;
       if (dateEnd && o.date > dateEnd) return false;
@@ -3388,8 +3322,8 @@ function renderAdminCalendar() {
   let html = headers.map(h => `<div class="text-center font-bold text-slate-400 py-1">${h}</div>`).join('');
 
   // Nov 2026 starts on Sunday (0), 30 days
-  for (let day = 1; day <= 30; day++) {
-    const dateStr = `2026-11-${String(day).padStart(2, '0')}`;
+  for (let day = 1; day <= 28; day++) {
+    const dateStr = `2027-02-${String(day).padStart(2, '0')}`;
     const dayOrders = state.orders.filter(o => (state.adminStoreFilter === 'all' || o.store === state.adminStoreFilter) && o.date === dateStr && o.status !== '已取消');
     const selected = state.calendarFilterDate === dateStr;
     html += `
@@ -3432,7 +3366,7 @@ function openCreateOrderModal() {
   if (state.adminStoreFilter !== 'all') storeSel.value = state.adminStoreFilter;
 
   document.getElementById('create-order-dining').value = '內用';
-  document.getElementById('create-order-date').value = '2026-11-27';
+  document.getElementById('create-order-date').value = '2027-02-05';
   document.getElementById('create-order-status').value = '待確認';
   document.getElementById('create-order-name').value = '';
   document.getElementById('create-order-phone').value = '';
@@ -3726,7 +3660,7 @@ function clearFormImage(prefix) {
 function renderAdminMenuTable() {
   const catSel = document.getElementById('admin-menu-cat-filter');
   if (catSel.options.length <= 1) {
-    CATEGORIES.filter(c => c !== '套餐組合').forEach(c => catSel.add(new Option(c, c)));
+    CATEGORIES.filter(c => c !== '春節多人套餐').forEach(c => catSel.add(new Option(c, c)));
   }
 
   const q = (document.getElementById('admin-menu-search').value || '').trim().toLowerCase();
@@ -3946,7 +3880,7 @@ function openAddDishModal() {
   state.dishFormImage = '';
   document.getElementById('dish-form-title').textContent = '新增菜色';
   const catSel = document.getElementById('dish-form-cat');
-  catSel.innerHTML = CATEGORIES.filter(c => c !== '套餐組合').map(c => `<option value="${c}">${c}</option>`).join('');
+  catSel.innerHTML = CATEGORIES.filter(c => c !== '春節多人套餐').map(c => `<option value="${c}">${c}</option>`).join('');
   document.getElementById('dish-form-name').value = '';
   document.getElementById('dish-form-price').value = '';
   document.getElementById('dish-form-spice-level').value = '0';
@@ -3964,7 +3898,7 @@ function openEditDishModal(id) {
   state.dishFormImage = d.image || '';
   document.getElementById('dish-form-title').textContent = `編輯菜色 — ${d.name}`;
   const catSel = document.getElementById('dish-form-cat');
-  catSel.innerHTML = CATEGORIES.filter(c => c !== '套餐組合').map(c => `<option value="${c}">${c}</option>`).join('');
+  catSel.innerHTML = CATEGORIES.filter(c => c !== '春節多人套餐').map(c => `<option value="${c}">${c}</option>`).join('');
   catSel.value = d.category;
   document.getElementById('dish-form-name').value = d.name;
   document.getElementById('dish-form-price').value = d.price;
