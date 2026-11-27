@@ -1433,8 +1433,8 @@ function initFirebaseSync() {
       if (doc.exists && doc.data() && Array.isArray(doc.data().data)) {
         state.menu = normalizeAvailability(doc.data().data);
         safeSet(STORAGE_KEYS.MENU, state.menu);
-  cloudSaveConfig('menu', state.menu);
-        refreshAllViews();
+        if (state.customerStep === 4) renderCustomerMenu();
+        if (state.adminLoggedIn) refreshAdminViews();
       } else {
         cloudSaveConfig('menu', state.menu);
       }
@@ -1444,8 +1444,8 @@ function initFirebaseSync() {
       if (doc.exists && doc.data() && Array.isArray(doc.data().data)) {
         state.sets = normalizeAvailability(doc.data().data);
         safeSet(STORAGE_KEYS.SETS, state.sets);
-  cloudSaveConfig('sets', state.sets);
-        refreshAllViews();
+        if (state.customerStep === 4) renderCustomerMenu();
+        if (state.adminLoggedIn) refreshAdminViews();
       } else {
         cloudSaveConfig('sets', state.sets);
       }
@@ -1455,7 +1455,6 @@ function initFirebaseSync() {
       if (doc.exists && doc.data() && doc.data().data !== undefined) {
         state.upsellDishName = normalizeDishNameSimple(doc.data().data);
         safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
-      cloudSaveConfig('upsell', state.upsellDishName);
         renderUpsellBox();
         if (state.adminLoggedIn && state.adminTab === 'menu') renderAdminMenuTable();
       } else {
