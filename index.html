@@ -1349,6 +1349,7 @@ const FIREBASE_CONFIG = {
 
 let db = null;
 let firebaseConnected = false;
+let adminOrdersUnsub = null;
 
 function isFirebaseConfigured() {
   return Boolean(
@@ -1421,10 +1422,76 @@ async function testFirebaseConnection() {
   try {
     const ts = new Date().toLocaleTimeString('zh-TW');
     await db.collection('siammore_config').doc('ping').set({ ts, ok: true });
-    const snap = await db.collection('siammore_orders').get();
-    showToast(`✅ Firebase 雲端讀寫正常！目前雲端共有 ${snap.size} 筆訂單（${ts}）`, 'success');
+    await db.collection('siammore_orders').limit(1).get();
+    showToast(`✅ Firebase 雲端讀寫正常！（${ts}）`, 'success');
   } catch (e) {
     showToast('❌ 雲端測試失敗：' + formatFirebaseError(e), 'error');
+  }
+}
+
+function stopAdminOrdersListener() {
+  if (typeof adminOrdersUnsub === 'function') {
+    adminOrdersUnsub();
+    adminOrdersUnsub = null;
+  }
+}
+
+function startAdminOrdersListener() {
+  if (!firebaseConnected || !db || adminOrdersUnsub) return;
+  adminOrdersUnsub = db.collection('siammore_orders').onSnapshot((snap) => {
+    const cloudOrders = [];
+    snap.forEach(doc => cloudOrders.push(doc.data()));
+    cloudOrders.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    state.orders = cloudOrders;
+    safeSet(STORAGE_KEYS.ORDERS, state.orders);
+    if (state.adminLoggedIn) refreshAdminViews();
+  }, (err) => {
+    console.error('Orders snapshot error:', err);
+    updateFirebaseStatusBadge(false, 'Firebase 權限或額度異常');
+  });
+}
+
+async function fetchCloudAuthOnce() {
+  if (!firebaseConnected || !db) return;
+  try {
+    const doc = await db.collection('siammore_config').doc('auth').get();
+    if (doc.exists && doc.data() && doc.data().data) {
+      state.auth = doc.data().data;
+      safeSet(STORAGE_KEYS.AUTH, state.auth);
+      updateStoreBranding();
+    }
+  } catch (e) {
+    console.error('Fetch auth error:', e);
+  }
+}
+
+async function loadPublicConfigOnce() {
+  if (!firebaseConnected || !db) return;
+  try {
+    const configRef = db.collection('siammore_config');
+    const [menuDoc, setsDoc, upsellDoc] = await Promise.all([
+      configRef.doc('menu').get(),
+      configRef.doc('sets').get(),
+      configRef.doc('upsell').get()
+    ]);
+    if (menuDoc.exists && menuDoc.data() && Array.isArray(menuDoc.data().data)) {
+      state.menu = normalizeAvailability(menuDoc.data().data);
+      safeSet(STORAGE_KEYS.MENU, state.menu);
+    }
+    if (setsDoc.exists && setsDoc.data() && Array.isArray(setsDoc.data().data)) {
+      state.sets = normalizeAvailability(setsDoc.data().data);
+      safeSet(STORAGE_KEYS.SETS, state.sets);
+    }
+    if (upsellDoc.exists && upsellDoc.data() && upsellDoc.data().data !== undefined) {
+      state.upsellDishName = normalizeDishNameSimple(upsellDoc.data().data);
+      safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
+    }
+    if (state.customerStep === 4) renderCustomerMenu();
+    renderUpsellBox();
+    if (state.adminLoggedIn) refreshAdminViews();
+  } catch (e) {
+    console.error('Load config error:', e);
+    updateFirebaseStatusBadge(false, 'Firebase 讀取受限');
   }
 }
 
@@ -1439,66 +1506,9 @@ function initFirebaseSync() {
     }
     db = firebase.firestore();
     firebaseConnected = true;
-    updateFirebaseStatusBadge(true, 'Firebase 雲端即時同步中');
-
-    // 1. Real-time Orders Collection (each order is its own document -> safe for concurrent customers!)
-    db.collection('siammore_orders').onSnapshot((snap) => {
-      const cloudOrders = [];
-      snap.forEach(doc => cloudOrders.push(doc.data()));
-      cloudOrders.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-      state.orders = cloudOrders;
-      safeSet(STORAGE_KEYS.ORDERS, state.orders);
-      if (state.adminLoggedIn) refreshAdminViews();
-    }, (err) => {
-      console.error('Orders snapshot error:', err);
-      updateFirebaseStatusBadge(false, 'Firebase 權限或連線錯誤');
-    });
-
-    // 2. Real-time Config Docs (auth, menu, sets, upsell)
-    const configRef = db.collection('siammore_config');
-
-    configRef.doc('auth').onSnapshot((doc) => {
-      if (doc.exists && doc.data() && doc.data().data) {
-        state.auth = doc.data().data;
-        safeSet(STORAGE_KEYS.AUTH, state.auth);
-        updateStoreBranding();
-      } else {
-        cloudSaveConfig('auth', state.auth);
-      }
-    });
-
-    configRef.doc('menu').onSnapshot((doc) => {
-      if (doc.exists && doc.data() && Array.isArray(doc.data().data)) {
-        state.menu = normalizeAvailability(doc.data().data);
-        safeSet(STORAGE_KEYS.MENU, state.menu);
-        if (state.customerStep === 4) renderCustomerMenu();
-        if (state.adminLoggedIn) refreshAdminViews();
-      } else {
-        cloudSaveConfig('menu', state.menu);
-      }
-    });
-
-    configRef.doc('sets').onSnapshot((doc) => {
-      if (doc.exists && doc.data() && Array.isArray(doc.data().data)) {
-        state.sets = normalizeAvailability(doc.data().data);
-        safeSet(STORAGE_KEYS.SETS, state.sets);
-        if (state.customerStep === 4) renderCustomerMenu();
-        if (state.adminLoggedIn) refreshAdminViews();
-      } else {
-        cloudSaveConfig('sets', state.sets);
-      }
-    });
-
-    configRef.doc('upsell').onSnapshot((doc) => {
-      if (doc.exists && doc.data() && doc.data().data !== undefined) {
-        state.upsellDishName = normalizeDishNameSimple(doc.data().data);
-        safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
-        renderUpsellBox();
-        if (state.adminLoggedIn && state.adminTab === 'menu') renderAdminMenuTable();
-      } else {
-        cloudSaveConfig('upsell', state.upsellDishName);
-      }
-    });
+    updateFirebaseStatusBadge(true, 'Firebase 省額度同步中');
+    // Minimal reads: fetch menu/sets/upsell ONCE on load (only 3 reads, 0 writes!)
+    loadPublicConfigOnce();
   } catch (e) {
     console.error('Firebase init error:', e);
     firebaseConnected = false;
@@ -1909,6 +1919,7 @@ function switchAppMode(mode) {
   const adminView = document.getElementById('admin-view');
 
   if (mode === 'customer') {
+    stopAdminOrdersListener();
     custView.classList.remove('hidden');
     adminView.classList.add('hidden');
     if (window.location.hash === '#/admin') history.replaceState(null, '', '#/');
@@ -1918,7 +1929,9 @@ function switchAppMode(mode) {
     custView.classList.add('hidden');
     adminView.classList.remove('hidden');
     if (window.location.hash !== '#/admin') history.replaceState(null, '', '#/admin');
+    fetchCloudAuthOnce();
     if (state.adminLoggedIn) {
+      startAdminOrdersListener();
       refreshAdminViews();
     }
   }
@@ -2940,14 +2953,28 @@ function openOrderLookupModal() {
   }
 }
 
-function runCustomerOrderLookup() {
+async function runCustomerOrderLookup() {
   const phone = document.getElementById('lookup-phone-input').value.trim();
   const body = document.getElementById('lookup-results-body');
   if (!phone) {
-    body.innerHTML = `<p class="text-stone-400 text-center py-6">請輸入行動電話</p>`;
+    body.innerHTML = `<p class="text-stone-400 text-center py-6">請輸入訂位電話</p>`;
     return;
   }
-  const matched = state.orders.filter(o => o.phone === phone);
+  let matched = state.orders.filter(o => o.phone === phone);
+  if (firebaseConnected && db) {
+    body.innerHTML = `<p class="text-stone-400 text-center py-6">查詢中...</p>`;
+    try {
+      const snap = await db.collection('siammore_orders').where('phone', '==', phone).get();
+      const cloudMatched = [];
+      snap.forEach(doc => cloudMatched.push(doc.data()));
+      if (cloudMatched.length > 0) {
+        cloudMatched.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+        matched = cloudMatched;
+      }
+    } catch (e) {
+      console.error('Lookup phone query error:', e);
+    }
+  }
   if (matched.length === 0) {
     body.innerHTML = `<p class="text-stone-500 text-center py-6">查無電話「${phone}」的預點訂單</p>`;
     return;
@@ -2991,16 +3018,19 @@ function runCustomerOrderLookup() {
 // ==================== ADMIN AUTH & SETTINGS ====================
 
 
-function handleAdminLogin() {
+async function handleAdminLogin() {
   const email = document.getElementById('admin-login-email').value.trim();
   const pwd = document.getElementById('admin-login-password').value;
   const errEl = document.getElementById('admin-login-error');
+
+  await fetchCloudAuthOnce();
 
   if (email === state.auth.email && pwd === state.auth.password) {
     errEl.classList.add('hidden');
     state.adminLoggedIn = true;
     document.getElementById('admin-login-screen').classList.add('hidden');
     document.getElementById('admin-dashboard-shell').classList.remove('hidden');
+    startAdminOrdersListener();
     refreshAdminViews();
     showToast('已登入管理後台');
   } else {
@@ -3011,6 +3041,7 @@ function handleAdminLogin() {
 
 function handleAdminLogout() {
   state.adminLoggedIn = false;
+  stopAdminOrdersListener();
   document.getElementById('admin-dashboard-shell').classList.add('hidden');
   document.getElementById('admin-login-screen').classList.remove('hidden');
   document.getElementById('admin-login-password').value = '';
