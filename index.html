@@ -200,7 +200,7 @@
           </div>
           <div>
             <label for="cust-phone" class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">訂位電話 PHONE <span class="text-rose-600">*</span></label>
-            <input id="cust-phone" type="tel" placeholder="例：0912345678"
+            <input id="cust-phone" type="tel" inputmode="numeric" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)" placeholder="請輸入 10 碼手機號碼（例：0912345678）"
               class="w-full px-4 py-3 rounded-xl border border-stone-300 focus:ring-2 focus:ring-violet-600 outline-none" />
           </div>
           <div id="cust-guests-group">
@@ -280,7 +280,7 @@
             </div>
 
             <!-- Upsell Recommendation (Configured in Admin) -->
-            <div id="cart-upsell-box" class="p-3 rounded-xl bg-amber-50 border border-amber-200/80 mb-4 flex items-center justify-between gap-2">
+            <div id="cart-upsell-box" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200/80 mb-4 items-center justify-between gap-2">
               <div class="min-w-0">
                 <div class="text-[11px] font-bold text-amber-800 uppercase">重點加購推薦</div>
                 <div id="cart-upsell-info" class="text-sm font-semibold text-stone-800 truncate">摩摩喳喳 <span class="text-amber-700">NT$ 100</span></div>
@@ -802,7 +802,10 @@
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 class="text-xl sm:text-2xl font-bold text-slate-900">菜單與套餐管理（即時連動前台）</h2>
-              <p class="text-xs sm:text-sm text-slate-500">自由上傳菜色與套餐圖片、調整價格或切換售罄下架，顧客前台將同步更新</p>
+              <p class="text-xs sm:text-sm text-slate-500">自由上傳圖片、調整價格，並支援「全部分店」或「單一分店」獨立設定內用／外帶上下架</p>
+              <div id="admin-menu-store-scope" class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-100 text-violet-900 text-xs font-bold">
+                目前設定範圍：全部分店（套用至全部 19 間分店）
+              </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <button type="button" onclick="exportMenuConfigJSON()"
@@ -833,6 +836,24 @@
           </div>
 
           <div id="admin-menu-dishes-panel" class="space-y-4">
+            <!-- Dedicated Upsell Control Bar -->
+            <div class="bg-amber-50/80 rounded-2xl p-4 border border-amber-200 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-bold text-amber-900">⭐ 前台重點加購推薦：</span>
+                <span id="admin-upsell-status-label" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white border border-amber-200 text-amber-800">目前未啟用</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <select id="admin-upsell-select" onchange="setUpsellFromDropdown()"
+                  class="px-3 py-1.5 rounded-xl border border-amber-300 bg-white text-xs font-semibold text-slate-700 outline-none">
+                  <option value="">（不顯示重點加購推薦）</option>
+                </select>
+                <button type="button" onclick="clearUpsellDish()"
+                  class="px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold transition">
+                  取消推薦
+                </button>
+              </div>
+            </div>
+
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap gap-3">
               <input id="admin-menu-search" type="text" oninput="renderAdminMenuTable()" placeholder="搜尋菜色名稱..."
                 class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm flex-1 min-w-[200px] outline-none focus:ring-2 focus:ring-violet-600" />
@@ -1465,26 +1486,33 @@ async function fetchCloudAuthOnce() {
   }
 }
 
+async function cloudSaveCatalog() {
+  return cloudSaveConfig('catalog', {
+    menu: state.menu,
+    sets: state.sets,
+    upsellDishName: state.upsellDishName || ''
+  });
+}
+
 async function loadPublicConfigOnce() {
   if (!firebaseConnected || !db) return;
   try {
-    const configRef = db.collection('siammore_config');
-    const [menuDoc, setsDoc, upsellDoc] = await Promise.all([
-      configRef.doc('menu').get(),
-      configRef.doc('sets').get(),
-      configRef.doc('upsell').get()
-    ]);
-    if (menuDoc.exists && menuDoc.data() && Array.isArray(menuDoc.data().data)) {
-      state.menu = normalizeAvailability(menuDoc.data().data);
-      safeSet(STORAGE_KEYS.MENU, state.menu);
-    }
-    if (setsDoc.exists && setsDoc.data() && Array.isArray(setsDoc.data().data)) {
-      state.sets = normalizeAvailability(setsDoc.data().data);
-      safeSet(STORAGE_KEYS.SETS, state.sets);
-    }
-    if (upsellDoc.exists && upsellDoc.data() && upsellDoc.data().data !== undefined) {
-      state.upsellDishName = normalizeDishNameSimple(upsellDoc.data().data);
-      safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
+    // Ultra-low quota: only 1 SINGLE read loads menu + sets + upsell together!
+    const catDoc = await db.collection('siammore_config').doc('catalog').get();
+    if (catDoc.exists && catDoc.data() && catDoc.data().data) {
+      const c = catDoc.data().data;
+      if (Array.isArray(c.menu)) {
+        state.menu = normalizeAvailability(c.menu);
+        safeSet(STORAGE_KEYS.MENU, state.menu);
+      }
+      if (Array.isArray(c.sets)) {
+        state.sets = normalizeAvailability(c.sets);
+        safeSet(STORAGE_KEYS.SETS, state.sets);
+      }
+      if (c.upsellDishName !== undefined) {
+        state.upsellDishName = normalizeDishNameSimple(c.upsellDishName);
+        safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
+      }
     }
     if (state.customerStep === 4) renderCustomerMenu();
     renderUpsellBox();
@@ -1824,7 +1852,7 @@ let state = {
   adminMenuSubtab: 'dishes',
   pendingSetConfig: null,
   setConfigTarget: 'customer',
-  upsellDishName: '摩摩喳喳',
+  upsellDishName: '',
   dishFormImage: '',
   setFormImage: '',
   orders: [],
@@ -1858,14 +1886,18 @@ function normalizeAvailability(list) {
   }));
 }
 
-function isItemAvailableFor(item, diningType) {
-  return diningType === '內用' ? item.availableDineIn !== false : item.availableTakeout !== false;
+function isItemAvailableFor(item, diningType, storeName) {
+  const key = diningType === '內用' ? 'availableDineIn' : 'availableTakeout';
+  if (storeName && storeName !== 'all' && item.storeOverrides && item.storeOverrides[storeName] && item.storeOverrides[storeName][key] !== undefined) {
+    return item.storeOverrides[storeName][key] !== false;
+  }
+  return item[key] !== false;
 }
 
 function loadInitialData() {
   state.menu = normalizeAvailability(safeGet(STORAGE_KEYS.MENU, null) || createSeedMenu());
   state.sets = normalizeAvailability(safeGet(STORAGE_KEYS.SETS, null) || createSeedSets());
-  state.upsellDishName = safeGet(STORAGE_KEYS.UPSELL, '摩摩喳喳');
+  state.upsellDishName = safeGet(STORAGE_KEYS.UPSELL, '');
   state.orders = safeGet(STORAGE_KEYS.ORDERS, null) || createSeedOrders();
   state.auth = safeGet(STORAGE_KEYS.AUTH, null) || { ...DEFAULT_AUTH };
   safeSet(STORAGE_KEYS.MENU, state.menu);
@@ -2289,6 +2321,11 @@ function validateAndEnterMenu() {
     errEl.classList.remove('hidden');
     return;
   }
+  if (!/^\d{10}$/.test(phone)) {
+    errEl.textContent = '訂位電話必須為 10 碼數字（例：0912345678）';
+    errEl.classList.remove('hidden');
+    return;
+  }
   errEl.classList.add('hidden');
   state.customerDraft.name = name;
   state.customerDraft.phone = phone;
@@ -2354,7 +2391,7 @@ function renderCustomerMenu() {
 
   // If 春節多人套餐 is selected (and not searching single dishes)
   if (!q && state.activeCategory === '春節多人套餐') {
-    const availSets = state.sets.filter(s => isItemAvailableFor(s, state.customerDraft.diningType));
+    const availSets = state.sets.filter(s => isItemAvailableFor(s, state.customerDraft.diningType, state.customerDraft.store));
     if (availSets.length === 0) {
       grid.innerHTML = `<div class="col-span-full bg-white rounded-2xl p-8 text-center text-stone-400 border border-stone-200">目前暫無供應中套餐</div>`;
       return;
@@ -2394,7 +2431,7 @@ function renderCustomerMenu() {
   }
 
   const list = state.menu.filter(d => {
-    if (!isItemAvailableFor(d, state.customerDraft.diningType)) return false;
+    if (!isItemAvailableFor(d, state.customerDraft.diningType, state.customerDraft.store)) return false;
     if (q) return d.name.toLowerCase().includes(q) || d.category.toLowerCase().includes(q);
     return d.category === state.activeCategory;
   });
@@ -2476,12 +2513,15 @@ function renderSetConfigBody() {
   const activeDining = state.setConfigTarget === 'admin-create'
     ? (document.getElementById('create-order-dining').value || '內用')
     : state.customerDraft.diningType;
+  const activeStore = state.setConfigTarget === 'admin-create'
+    ? (document.getElementById('create-order-store').value || 'all')
+    : state.customerDraft.store;
 
   const isOptionAvailable = (optName) => {
     const base = optName.replace(/\(大\)|\(小\)|\(冷\/熱\)|\(冰\/熱\)/g, '').trim();
     const matched = state.menu.find(d => d.name === optName || d.name.replace(/\(大\)|\(小\)|\(冷\/熱\)|\(冰\/熱\)/g, '').trim() === base);
     if (!matched) return true;
-    return isItemAvailableFor(matched, activeDining);
+    return isItemAvailableFor(matched, activeDining, activeStore);
   };
 
   s.groups.forEach(g => {
@@ -2652,7 +2692,7 @@ function confirmAddSetToCart() {
 function handleAddDishClick(dishId) {
   if (!state.cart.some(it => it.isSet)) { showToast('春節期間請先點選任一春節多人套餐，方能單點加點', 'error'); return; }
   const dish = state.menu.find(d => d.id === dishId);
-  if (!dish || !isItemAvailableFor(dish, state.customerDraft.diningType)) return;
+  if (!dish || !isItemAvailableFor(dish, state.customerDraft.diningType, state.customerDraft.store)) return;
   addItemToCart(dish, '辣度固定');
 }
 
@@ -2698,14 +2738,20 @@ function renderUpsellBox() {
   const targetName = normalizeDishNameSimple(state.upsellDishName);
   if (!targetName) {
     box.classList.add('hidden');
+    box.classList.remove('flex');
+    box.style.display = 'none';
     return;
   }
-  const dish = state.menu.find(d => d.name === targetName && isItemAvailableFor(d, state.customerDraft.diningType));
+  const dish = state.menu.find(d => d.name === targetName && isItemAvailableFor(d, state.customerDraft.diningType, state.customerDraft.store));
   if (!dish) {
     box.classList.add('hidden');
+    box.classList.remove('flex');
+    box.style.display = 'none';
     return;
   }
   box.classList.remove('hidden');
+  box.classList.add('flex');
+  box.style.display = 'flex';
   info.innerHTML = `${tDish(dish.name)} <span class="text-amber-700">NT$ ${dish.price}</span>`;
   if (btn) {
     const hasSet = state.cart.some(it => it.isSet);
@@ -2722,7 +2768,7 @@ function quickAddRecommended() {
     return;
   }
   const targetName = normalizeDishNameSimple(state.upsellDishName);
-  const dish = state.menu.find(d => d.name === targetName && isItemAvailableFor(d, state.customerDraft.diningType));
+  const dish = state.menu.find(d => d.name === targetName && isItemAvailableFor(d, state.customerDraft.diningType, state.customerDraft.store));
   if (!dish) {
     showToast('此推薦品項目前暫無供應', 'info');
     return;
@@ -4070,6 +4116,7 @@ function clearFormImage(prefix) {
 }
 
 function renderAdminMenuTable() {
+  renderAdminUpsellBar();
   const catSel = document.getElementById('admin-menu-cat-filter');
   if (catSel.options.length <= 1) {
     CATEGORIES.filter(c => c !== '春節多人套餐').forEach(c => catSel.add(new Option(c, c)));
@@ -4084,32 +4131,47 @@ function renderAdminMenuTable() {
     return true;
   });
 
-  document.getElementById('admin-menu-tbody').innerHTML = list.map(d => `
-    <tr class="hover:bg-slate-50 ${(!d.availableDineIn && !d.availableTakeout) ? 'opacity-60' : ''}">
+  const scopeEl = document.getElementById('admin-menu-store-scope');
+  if (scopeEl) {
+    scopeEl.textContent = state.adminStoreFilter === 'all'
+      ? '目前設定範圍：全部分店（上下架將套用至全部 19 間分店）'
+      : `目前設定範圍：${state.adminStoreFilter}（上下架僅影響此分店，不影響其他分店）`;
+  }
+  const curStore = state.adminStoreFilter;
+
+  document.getElementById('admin-menu-tbody').innerHTML = list.map(d => {
+    const dineOk = isItemAvailableFor(d, '內用', curStore);
+    const takeOk = isItemAvailableFor(d, '外帶', curStore);
+    const hasCustom = curStore !== 'all' && d.storeOverrides && d.storeOverrides[curStore];
+    return `
+    <tr class="hover:bg-slate-50 ${(!dineOk && !takeOk) ? 'opacity-60' : ''}">
       <td class="px-4 py-2.5">
         ${d.image
           ? `<img src="${d.image}" alt="${d.name}" class="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200" />`
           : `<div class="w-11 h-11 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-[10px]">無圖</div>`
         }
       </td>
-      <td class="px-4 py-3 font-semibold text-slate-800">${d.name}</td>
+      <td class="px-4 py-3 font-semibold text-slate-800">
+        ${d.name}
+        ${hasCustom ? '<span class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-800">本店個別設定</span>' : ''}
+      </td>
       <td class="px-4 py-3 text-xs text-slate-500">${d.category}</td>
       <td class="px-4 py-3 text-xs">${renderChiliIcons(d.spiceLevel) || "不辣"}</td>
       <td class="px-4 py-3 text-right font-bold text-slate-900">NT$ ${d.price}</td>
       <td class="px-4 py-3 text-center">
         <button type="button" onclick="toggleDishAvailability('${d.id}', 'dinein')"
           class="px-2.5 py-1 rounded-full text-xs font-bold transition ${
-            d.availableDineIn ? 'bg-violet-100 text-violet-900 hover:bg-violet-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+            dineOk ? 'bg-violet-100 text-violet-900 hover:bg-violet-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
           }">
-          ${d.availableDineIn ? '內用上架' : '內用下架'}
+          ${dineOk ? '內用上架' : '內用下架'}
         </button>
       </td>
       <td class="px-4 py-3 text-center">
         <button type="button" onclick="toggleDishAvailability('${d.id}', 'takeout')"
           class="px-2.5 py-1 rounded-full text-xs font-bold transition ${
-            d.availableTakeout ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+            takeOk ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
           }">
-          ${d.availableTakeout ? '外帶上架' : '外帶下架'}
+          ${takeOk ? '外帶上架' : '外帶下架'}
         </button>
       </td>
       <td class="px-4 py-3 text-right whitespace-nowrap space-x-1">
@@ -4125,35 +4187,44 @@ function renderAdminMenuTable() {
           class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold">刪除</button>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function renderAdminSetsTable() {
-  document.getElementById('admin-sets-tbody').innerHTML = state.sets.map(s => `
-    <tr class="hover:bg-slate-50 ${(!s.availableDineIn && !s.availableTakeout) ? 'opacity-60' : ''}">
+  const curStore = state.adminStoreFilter;
+  document.getElementById('admin-sets-tbody').innerHTML = state.sets.map(s => {
+    const dineOk = isItemAvailableFor(s, '內用', curStore);
+    const takeOk = isItemAvailableFor(s, '外帶', curStore);
+    const hasCustom = curStore !== 'all' && s.storeOverrides && s.storeOverrides[curStore];
+    return `
+    <tr class="hover:bg-slate-50 ${(!dineOk && !takeOk) ? 'opacity-60' : ''}">
       <td class="px-4 py-2.5">
         ${s.image
           ? `<img src="${s.image}" alt="${s.name}" class="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200" />`
           : `<div class="w-11 h-11 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-[10px]">無圖</div>`
         }
       </td>
-      <td class="px-4 py-3 font-bold text-violet-950">${s.name}</td>
+      <td class="px-4 py-3 font-bold text-violet-950">
+        ${s.name}
+        ${hasCustom ? '<span class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-800">本店個別設定</span>' : ''}
+      </td>
       <td class="px-4 py-3 text-xs text-slate-500">${s.summary}</td>
       <td class="px-4 py-3 text-right font-bold text-slate-900">NT$ ${s.price.toLocaleString()}</td>
       <td class="px-4 py-3 text-center">
         <button type="button" onclick="toggleSetAvailability('${s.id}', 'dinein')"
           class="px-2.5 py-1 rounded-full text-xs font-bold transition ${
-            s.availableDineIn ? 'bg-violet-100 text-violet-900 hover:bg-violet-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+            dineOk ? 'bg-violet-100 text-violet-900 hover:bg-violet-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
           }">
-          ${s.availableDineIn ? '內用上架' : '內用下架'}
+          ${dineOk ? '內用上架' : '內用下架'}
         </button>
       </td>
       <td class="px-4 py-3 text-center">
         <button type="button" onclick="toggleSetAvailability('${s.id}', 'takeout')"
           class="px-2.5 py-1 rounded-full text-xs font-bold transition ${
-            s.availableTakeout ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+            takeOk ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
           }">
-          ${s.availableTakeout ? '外帶上架' : '外帶下架'}
+          ${takeOk ? '外帶上架' : '外帶下架'}
         </button>
       </td>
       <td class="px-4 py-3 text-right">
@@ -4161,22 +4232,42 @@ function renderAdminSetsTable() {
           class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-violet-100 text-violet-900 text-xs font-semibold">編輯 / 圖片</button>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
+}
+
+function applyToggleForScope(item, channel) {
+  const key = channel === 'dinein' ? 'availableDineIn' : 'availableTakeout';
+  const diningLabel = channel === 'dinein' ? '內用' : '外帶';
+  const curStore = state.adminStoreFilter;
+  const currentVal = isItemAvailableFor(item, diningLabel, curStore);
+  const nextVal = !currentVal;
+
+  if (curStore === 'all') {
+    item[key] = nextVal;
+    if (item.storeOverrides) {
+      Object.keys(item.storeOverrides).forEach(st => {
+        delete item.storeOverrides[st][key];
+        if (Object.keys(item.storeOverrides[st]).length === 0) delete item.storeOverrides[st];
+      });
+    }
+    return `已將全部分店「${item.name}」${diningLabel}調整為${nextVal ? '上架' : '下架'}`;
+  } else {
+    if (!item.storeOverrides) item.storeOverrides = {};
+    if (!item.storeOverrides[curStore]) item.storeOverrides[curStore] = {};
+    item.storeOverrides[curStore][key] = nextVal;
+    return `已將【${curStore}】「${item.name}」${diningLabel}調整為${nextVal ? '上架' : '下架'}`;
+  }
 }
 
 function toggleSetAvailability(id, channel) {
   const s = state.sets.find(x => x.id === id);
   if (!s) return;
-  if (channel === 'dinein') {
-    s.availableDineIn = !s.availableDineIn;
-    showToast(`已將「${s.name}」內用調整為${s.availableDineIn ? '上架' : '下架'}`);
-  } else {
-    s.availableTakeout = !s.availableTakeout;
-    showToast(`已將「${s.name}」外帶調整為${s.availableTakeout ? '上架' : '下架'}`);
-  }
+  const msg = applyToggleForScope(s, channel);
   safeSet(STORAGE_KEYS.SETS, state.sets);
-  cloudSaveConfig('sets', state.sets);
+  cloudSaveCatalog();
   renderAdminSetsTable();
+  showToast(msg);
 }
 
 function openEditSetModal(id) {
@@ -4209,7 +4300,7 @@ function saveSetForm() {
   s.price = price;
   s.image = state.setFormImage || '';
   safeSet(STORAGE_KEYS.SETS, state.sets);
-  cloudSaveConfig('sets', state.sets);
+  cloudSaveCatalog();
   closeModal('modal-set-form');
   renderAdminSetsTable();
   showToast(`已更新「${name}」，前台已同步`);
@@ -4238,11 +4329,10 @@ function importMenuConfigJSON(event) {
       if (Array.isArray(data.sets)) state.sets = normalizeAvailability(data.sets);
       if (data.upsellDishName !== undefined) state.upsellDishName = data.upsellDishName;
       safeSet(STORAGE_KEYS.MENU, state.menu);
-  cloudSaveConfig('menu', state.menu);
       safeSet(STORAGE_KEYS.SETS, state.sets);
-  cloudSaveConfig('sets', state.sets);
+      cloudSaveCatalog();
       safeSet(STORAGE_KEYS.UPSELL, state.upsellDishName);
-      cloudSaveConfig('upsell', state.upsellDishName);
+      
       refreshAllViews();
       showToast('已成功匯入菜單與圖片設定！');
     } catch (err) {
@@ -4252,18 +4342,45 @@ function importMenuConfigJSON(event) {
   reader.readAsText(file);
 }
 
+function renderAdminUpsellBar() {
+  const sel = document.getElementById('admin-upsell-select');
+  const lbl = document.getElementById('admin-upsell-status-label');
+  if (sel) {
+    sel.innerHTML = '<option value="">（不顯示重點加購推薦）</option>' +
+      state.menu.map(d => `<option value="${d.name}">${d.name} (NT$ ${d.price})</option>`).join('');
+    sel.value = state.upsellDishName || '';
+  }
+  if (lbl) {
+    lbl.textContent = state.upsellDishName ? `推薦中：${state.upsellDishName}` : '目前未啟用（前台隱藏）';
+  }
+}
+
+function setUpsellFromDropdown() {
+  const val = document.getElementById('admin-upsell-select').value;
+  state.upsellDishName = val;
+  safeSet(STORAGE_KEYS.UPSELL, val);
+  cloudSaveCatalog();
+  renderAdminMenuTable();
+  renderUpsellBox();
+  showToast(val ? `已將「${val}」設為前台重點加購推薦` : '已取消前台重點加購推薦', val ? 'success' : 'info');
+}
+
+function clearUpsellDish() {
+  state.upsellDishName = '';
+  safeSet(STORAGE_KEYS.UPSELL, '');
+  cloudSaveCatalog();
+  renderAdminMenuTable();
+  renderUpsellBox();
+  showToast('已取消前台重點加購推薦', 'info');
+}
+
 function setUpsellDish(dishName) {
   if (state.upsellDishName === dishName) {
-    state.upsellDishName = '';
-    safeSet(STORAGE_KEYS.UPSELL, '');
-    cloudSaveConfig('upsell', '');
-    renderAdminMenuTable();
-    renderUpsellBox();
-    showToast('已取消前台重點加購推薦', 'info');
+    clearUpsellDish();
   } else {
     state.upsellDishName = dishName;
     safeSet(STORAGE_KEYS.UPSELL, dishName);
-    cloudSaveConfig('upsell', dishName);
+    cloudSaveCatalog();
     renderAdminMenuTable();
     renderUpsellBox();
     showToast(`已將「${dishName}」設為前台重點加購推薦`);
@@ -4273,16 +4390,11 @@ function setUpsellDish(dishName) {
 function toggleDishAvailability(id, channel) {
   const d = state.menu.find(x => x.id === id);
   if (!d) return;
-  if (channel === 'dinein') {
-    d.availableDineIn = !d.availableDineIn;
-    showToast(`已將「${d.name}」內用調整為${d.availableDineIn ? '上架' : '下架'}`);
-  } else {
-    d.availableTakeout = !d.availableTakeout;
-    showToast(`已將「${d.name}」外帶調整為${d.availableTakeout ? '上架' : '下架'}`);
-  }
+  const msg = applyToggleForScope(d, channel);
   safeSet(STORAGE_KEYS.MENU, state.menu);
-  cloudSaveConfig('menu', state.menu);
+  cloudSaveCatalog();
   renderAdminMenuTable();
+  showToast(msg);
 }
 
 function deleteDish(id) {
@@ -4291,7 +4403,7 @@ function deleteDish(id) {
   const name = state.menu[idx].name;
   state.menu.splice(idx, 1);
   safeSet(STORAGE_KEYS.MENU, state.menu);
-  cloudSaveConfig('menu', state.menu);
+  cloudSaveCatalog();
   renderAdminMenuTable();
   showToast(`已刪除菜色「${name}」`, 'info');
 }
@@ -4379,7 +4491,7 @@ function saveDishForm() {
   }
 
   safeSet(STORAGE_KEYS.MENU, state.menu);
-  cloudSaveConfig('menu', state.menu);
+  cloudSaveCatalog();
   closeModal('modal-dish-form');
   renderAdminMenuTable();
 }
@@ -4389,7 +4501,7 @@ function refreshAdminViews() {
   updateStoreBranding();
   if (state.adminTab === 'stats') renderAdminStats();
   else if (state.adminTab === 'orders') renderAdminOrders();
-  else if (state.adminTab === 'menu') renderAdminMenuTable();
+  else if (state.adminTab === 'menu') { renderAdminMenuTable(); renderAdminSetsTable(); }
   else if (state.adminTab === 'settings') loadSettingsForm();
 }
 
